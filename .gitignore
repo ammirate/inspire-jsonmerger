@@ -90,3 +90,5 @@ ENV/
 
 # Pycharm project settings
 .idea/
+# json-merger folder for development
+json_merger/

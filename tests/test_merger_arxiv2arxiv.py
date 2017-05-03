@@ -28,34 +28,21 @@ from json_merger.merger import Merger
 from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
-from merger_config_arxiv2arxiv import COMPARATORS, LIST_MERGE_OPS
+from modules.merger_config_arxiv2arxiv import (
+    COMPARATORS,
+    LIST_MERGE_OPS,
+    FIELD_MERGE_OPS
+)
 
 
-def json_merger_arxiv_to_arxiv_head(root, head, update):
+def json_merger_arxiv_to_arxiv(root, head, update):
     merger = Merger(
         root, head, update,
-        DictMergerOps.FALLBACK_KEEP_HEAD,
-        UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-        comparators=COMPARATORS,
-        list_merge_ops=LIST_MERGE_OPS
-    )
-    conflicts = None
-    try:
-        merger.merge()
-    except MergeError as e:
-        conflicts = [json.loads(c.to_json()) for c in e.content]
-    merged = merger.merged_root
-
-    return merged, conflicts
-
-
-def json_merger_arxiv_to_arxiv_update(root, head, update):
-    merger = Merger(
-        root, head, update,
-        DictMergerOps.FALLBACK_KEEP_HEAD,
+        DictMergerOps.FALLBACK_KEEP_UPDATE,  # Most common operation
         UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
         comparators=COMPARATORS,
-        list_merge_ops=LIST_MERGE_OPS
+        list_merge_ops=LIST_MERGE_OPS,
+        list_dict_ops=FIELD_MERGE_OPS
     )
     conflicts = None
     try:
@@ -75,68 +62,127 @@ def test_merging_schema_field():
     expected_merged = {'$schema': 'http://qa.inspirehep.net/schemas/records/hep.json'}
     expected_conflict = [['SET_FIELD', ['$schema'], 'http://inspirehep.net/schemas/records/hep.json']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv_head(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
 
 
-# te
+def test_merging_collections_field():
+    root = {'_collections': ['Literature']}
+    head = {'_collections': ['Literature', 'Conference']}
+    update = {'_collections': ['Literature', 'Paper']}
 
-# def test_merging_collections_field():
-#     root = {'_collections': ['bar']}
-#     head = {'_collections': ['bar', 'foo']}
-#     update = {'_collections': ['baz', 'spam']}
-#
-#     expected_merged = {'_collections': ['bar', 'foo']}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_desy_bookkeeping_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_export_to_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_fft_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
+    expected_merged = head
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_desy_bookkeeping_field():
+    root = {
+        "_desy_bookkeeping": [
+            {
+                "date": "2014-07-31",
+                "expert": "B",
+                "status": "abs"
+            }, {
+                "date": "2014-08-06",
+                "expert": "B",
+                "status": "printed"
+            }, {
+                "date": "2015-01-02",
+                "status": "final"
+            }
+        ]
+    }
+    head = {
+        "_desy_bookkeeping": [
+            {
+                "date": "2014-07-31",
+                "expert": "B",
+                "status": "printed2"
+            }, {
+                "date": "2014-08-06",
+                "expert": "B",
+                "status": "printed"
+            }, {
+                "date": "2015-01-02",
+                "expert": "B",
+                "status": "final"
+            }
+        ]
+    }
+    update = {
+        "_desy_bookkeeping": [
+            {
+                "date": "2014-07-31",
+                "status": "abs"
+            }, {
+                "date": "2014-08-06",
+                "expert": "B",
+                "status": "printed"
+            }, {
+                "date": "2015-01-03",
+                "status": "final"
+            }
+        ]
+    }
+
+    expected_merged = {
+        "_desy_bookkeeping": [
+            {
+                "date": "2014-07-31",
+                "status": "printed2"
+            }, {
+                "date": "2014-08-06",
+                "expert": "B",
+                "status": "printed"
+            }, {
+                "date": "2015-01-02",
+                "expert": "B",
+                "status": "final"
+            }
+
+        ]
+    }
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_export_to_field():
+    root = {}
+    head = {}
+    update = {}
+
+    expected_merged = {}
+    expected_conflict = {}
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_fft_field():
+    root = {}
+    head = {}
+    update = {}
+
+    expected_merged = {}
+    expected_conflict = {}
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
 #
 #
 # def test_merging_files_field():

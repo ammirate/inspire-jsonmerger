@@ -20,11 +20,17 @@
 # granted to it by virtue of its status as an Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
+from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.comparator import PrimaryKeyComparator
 from json_merger.contrib.inspirehep.author_util import (
-    AuthorNameDistanceCalculator, AuthorNameNormalizer, NameToken, NameInitial)
+    AuthorNameDistanceCalculator,
+    AuthorNameNormalizer,
+    NameToken,
+    NameInitial
+)
 from json_merger.contrib.inspirehep.comparators import (
-        DistanceFunctionComparator)
+        DistanceFunctionComparator
+)
 
 from inspirehep.modules.authors.utils import scan_author_string_for_phrases
 
@@ -81,7 +87,7 @@ def get_pk_comparator(primary_key_fields, normalization_functions=None):
     Ret.normalization_functions = normalization_functions or {}
     return Ret
 
-
+# alredy present
 SourceComparator = get_pk_comparator(['source'])
 AffiliationComparator = get_pk_comparator(['value'])
 CollectionsComparator = get_pk_comparator(['primary'])
@@ -91,9 +97,14 @@ PubInfoComparator = get_pk_comparator([
     ['journal_title', 'journal_volume', 'page_start'],
     ['journal_title', 'journal_volume', 'artid']])
 
+#new comparators
+
+DateComparator = get_pk_comparator(['date'])
+
+
 
 COMPARATORS = {
-    '_desy_bookkeeping': 'has to be defined/implmented',
+    '_desy_bookkeeping': DateComparator,
     '_export_to': 'has to be defined/implmented',
     '_fft': 'has to be defined/implmented',
     '_files': 'has to be defined/implmented',
@@ -161,8 +172,8 @@ COMPARATORS = {
 # We an always default to KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST so
 # this is less verbose.
 LIST_MERGE_OPS = {
-    '_collections': 'has to be defined',
-    '_desy_bookkeeping': 'has to be defined',
+    '_collections': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    '_desy_bookkeeping': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     '_export_to': 'has to be defined',
     '_fft': 'has to be defined',
     '_files': 'has to be defined',
@@ -225,4 +236,24 @@ LIST_MERGE_OPS = {
     'titles': 'has to be defined',
     'urls': 'has to be defined',
     'wirthdrawn': 'has to be defined'
+}
+
+FIELD_MERGE_OPS = {
+    '$schema': DictMergerOps.FALLBACK_KEEP_HEAD,
+    '_desy_bookkeeping': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
+    # '': DictMergerOps.FALLBACK_KEEP_HEAD,
 }
