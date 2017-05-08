@@ -24,6 +24,8 @@ from __future__ import absolute_import, division, print_function
 
 import json
 
+import pytest
+
 from json_merger.merger import Merger
 from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
@@ -55,7 +57,7 @@ def json_merger_arxiv_to_arxiv(root, head, update):
 
 
 def test_merging_schema_field():
-    root = {'$schema': 'http://inspire-nightly.cern.ch/schemas/records/hep.json'}
+    root = {'$schema': 'http://inspire-nightly.cern.ch/schemas/records/hep.json'}  # record_id: 1308464
     head = {'$schema': 'http://qa.inspirehep.net/schemas/records/hep.json'}
     update = {'$schema': 'http://inspirehep.net/schemas/records/hep.json'}
 
@@ -84,67 +86,68 @@ def test_merging_collections_field():
 
 def test_merging_desy_bookkeeping_field():
     root = {
-        "_desy_bookkeeping": [
+        '_desy_bookkeeping': [
             {
-                "date": "2014-07-31",
-                "expert": "B",
-                "status": "abs"
+                'date': '2014-07-31',
+                'expert': 'B',
+                'status': 'abs'
             }, {
-                "date": "2014-08-06",
-                "expert": "B",
-                "status": "printed"
+                'date': '2014-08-06',
+                'expert': 'B',
+                'status': 'printed'
             }, {
-                "date": "2015-01-02",
-                "status": "final"
+                'date': '2015-01-02',
+                'status': 'final'
             }
         ]
     }
+    # record_id: 1308464
     head = {
-        "_desy_bookkeeping": [
+        '_desy_bookkeeping': [
             {
-                "date": "2014-07-31",
-                "expert": "B",
-                "status": "printed2"
+                'date': '2014-07-31',
+                'expert': 'B',
+                'status': 'printed2'
             }, {
-                "date": "2014-08-06",
-                "expert": "B",
-                "status": "printed"
+                'date': '2014-08-06',
+                'expert': 'B',
+                'status': 'printed'
             }, {
-                "date": "2015-01-02",
-                "expert": "B",
-                "status": "final"
+                'date': '2015-01-02',
+                'expert': 'B',
+                'status': 'final'
             }
         ]
     }
     update = {
-        "_desy_bookkeeping": [
+        '_desy_bookkeeping': [
             {
-                "date": "2014-07-31",
-                "status": "abs"
+                'date': '2014-07-31',
+                'status': 'abs'
             }, {
-                "date": "2014-08-06",
-                "expert": "B",
-                "status": "printed"
+                'date': '2014-08-06',
+                'expert': 'B',
+                'status': 'printed'
             }, {
-                "date": "2015-01-03",
-                "status": "final"
+                'date': '2015-01-03',
+                'status': 'final'
             }
         ]
     }
 
     expected_merged = {
-        "_desy_bookkeeping": [
+        '_desy_bookkeeping': [
             {
-                "date": "2014-07-31",
-                "status": "printed2"
+                'date': '2014-07-31',
+                'status': 'printed2'
             }, {
-                "date": "2014-08-06",
-                "expert": "B",
-                "status": "printed"
+                'date': '2014-08-06',
+                'expert': 'B',
+                'status': 'printed'
             }, {
-                "date": "2015-01-02",
-                "expert": "B",
-                "status": "final"
+                'date': '2015-01-02',
+                'expert': 'B',
+                'status': 'final'
             }
 
         ]
@@ -158,12 +161,28 @@ def test_merging_desy_bookkeeping_field():
 
 
 def test_merging_export_to_field():
-    root = {}
-    head = {}
-    update = {}
+    root = {
+        '_export_to': {
+            'CDS': False,
+            'HAL': False
+        }
+    }
+    # record_id: 432169 & 717606
+    head = {
+        '_export_to': {
+            'CDS': True,
+            'HAL': False
+        }
+    }
+    update = {
+        '_export_to': {
+            'CDS': False,
+            'HAL': False
+        }
+    }
 
-    expected_merged = {}
-    expected_conflict = {}
+    expected_merged = head
+    expected_conflict = None
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
@@ -172,124 +191,713 @@ def test_merging_export_to_field():
 
 
 def test_merging_fft_field():
-    root = {}
-    head = {}
-    update = {}
+    root = {
+        '_fft': [
+            {
+                'creation_datetime': '2014-07-28T23:15:16',
+                'description': 'Fulltext',
+                'filename': 'fermilab-thesis-2014-17',
+                'format': '.pdf',
+                'path': '/opt/cds-invenio/var/data/files/g95/1902084/content.pdf;1',
+                'type': 'Main',
+                'version': 1
+            }
+        ]
+    }
+    # record_id: 1308464
+    head = {
+        '_fft': [
+            {
+                'creation_datetime': '2014-07-28T23:15:16',
+                'description': 'Fulltext',
+                'filename': 'fermilab-thesis-2014-18',
+                'format': '.pdf',
+                'path': '/opt/cds-invenio/var/data/files/g95/1902084/content.pdf;1',
+                'type': 'Main',
+                'version': 1
+            }
+        ]
+    }
+    update = {
+        '_fft': [
+            {
+                'creation_datetime': '2014-07-28T23:15:16',
+                'description': 'Fulltext',
+                'filename': 'fermilab-thesis-2014-19',
+                'format': '.pdf',
+                'path': '/opt/cds-invenio/var/data/files/g95/1902084/content.pdf;1',
+                'type': 'Main',
+                'version': 1
+            }
+        ]
+    }
 
-    expected_merged = {}
-    expected_conflict = {}
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['_fft', 0, 'filename'], 'fermilab-thesis-2014-19']]
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
-#
-#
-# def test_merging_files_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_private_notes_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_abstracts_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_accelerator_experiments_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_acquisition_source_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_arxiv_eprints_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
+
+
+def test_merging_files_field():
+    root = {
+        '_files': [
+            {
+                'bucket': 'foo',
+                'checksum': 'bar',
+                'key': 'baz',
+                'previewer': 'spam',
+                'size': 'egg',
+                'type': 'eggs',
+                'version_id': 'version'
+            }
+        ]
+    }
+    # record_id: not found 9/05/2017
+    head = {
+        '_files': [
+            {
+                'bucket': 'foo1',
+                'checksum': 'bar',
+                'key': 'baz',
+                'previewer': 'spam',
+                'size': 'egg',
+                'type': 'eggs',
+                'version_id': 'version'
+            }
+        ]
+    }
+    update = {
+        '_files': [
+            {
+                'bucket': 'foo2',
+                'checksum': 'bar',
+                'key': 'baz',
+                'previewer': 'spam',
+                'size': 'egg',
+                'type': 'eggs',
+                'version_id': 'version'
+            }, {
+                'bucket': 'foo2',
+                'checksum': 'bar',
+                'key': 'baz',
+                'previewer': 'spam',
+                'size': 'egg',
+                'type': 'eggs',
+                'version_id': 'second version'
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [['SET_FIELD', ['_files', 0, 'bucket'], 'foo1']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_private_notes_field():
+    root = {
+        '_private_notes': [
+            {
+                'source': 'SPIRES-HIDDEN',
+                'value': 'Update from APS OAI Harvest'
+            }
+        ]
+    }
+    # record_id: 905854
+    head = {
+        '_private_notes': [
+            {
+                'source': 'SPIRES-HIDDEN',
+                'value': 'Update from APS OAI Harvest foo'
+            }
+        ]
+    }
+    update = {
+        '_private_notes': [
+            {
+                'source': 'SPIRES-HIDDEN',
+                'value': 'Update from APS OAI Harvest bar'
+            }, {
+                'source': 'SPIRES',
+                'value': 'Added by ..HEP.ADD.TO.HEP from APS OAI Harvest'
+            }
+        ]
+    }
+
+    expected_merged = {
+        '_private_notes': [
+            {
+                'source': 'SPIRES-HIDDEN',
+                'value': 'Update from APS OAI Harvest foo'
+            }
+        ]
+    }
+    expected_conflict = [['SET_FIELD', ['_private_notes', 0, 'value'], 'Update from APS OAI Harvest bar']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_abstracts_field():
+    root = {
+        'abstracts': [
+            {
+                'value': 'We investigate the structure of a proto-neutron star with '
+                         'trapped neutrinos by us ing quantum hadrodynamics.',
+                'source': 'arxiv'
+            }
+        ]
+    }
+    # record_id: 905854
+    head = {
+        'abstracts': [
+            {
+                'value': 'We investigate the structure of a proto-neutron star with '
+                         'trapped neutrinos by us ing quantum hadrodynamics. bar',
+                'source': 'arxiv'
+            }
+        ]
+    }
+    update = {
+        'abstracts': [
+            {
+                'value': 'We investigate the structure of a proto-neutron star with '
+                         'trapped neutrinos by us ing quantum hadrodynamics. foo',
+                'source': 'arxiv'
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [
+        [
+            'SET_FIELD',
+            ['abstracts', 0, 'value'],
+            'We investigate the structure of a proto-neutron star with '
+            'trapped neutrinos by us ing quantum hadrodynamics. bar'
+        ]
+    ]
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_accelerator_experiments_field():
+    root = {
+        'accelerator_experiments': [
+            {
+                'curated_relation': True,
+                'experiment': 'FNAL-E-0830',
+                'facet_experiment': [
+                    ['FNAL-E-0830']
+                ],
+                'recid': 1110316,
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/experiments/1110316'
+                }
+            }
+        ],
+    }
+    # record_id: 982117
+    head = {
+        'accelerator_experiments': [
+            {
+                'curated_relation': True,
+                'experiment': 'FNAL-E-08302',
+                'facet_experiment': [
+                    ['FNAL-E-0830']
+                ],
+                'recid': 1110316,
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/experiments/1110316'
+                }
+            }, {
+                'curated_relation': True,
+                'experiment': 'FNAL-E-08301',
+                'facet_experiment': [
+                    ['FNAL-E-0831']
+                ],
+                'recid': 1110317,
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/experiments/1110317'
+                }
+            }
+        ],
+    }
+    update = {
+        'accelerator_experiments': [
+            {
+                'curated_relation': True,
+                'experiment': 'FNAL-E-08301',
+                'facet_experiment': [
+                    ['FNAL-E-0830']
+                ],
+                'recid': 1110316,
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/experiments/1110316'
+                }
+            }
+        ],
+    }
+
+    expected_merged = head
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_acquisition_source_field():
+    root = {
+        'acquisition_source': {
+            'method': 'batchuploade',
+            'source': 'ejl'
+        }
+    }
+    # record_id: 1517095
+    head = {
+        'acquisition_source': {
+            'method': 'batchuploadeR',
+            'source': 'ejl'
+        }
+    }
+    update = {
+        'acquisition_source': {
+            'method': 'batchuploader',
+            'source': 'ejl'
+        }
+    }
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['acquisition_source', 'method'], 'batchuploader']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_arxiv_eprints_field():
+    root = {
+        'arxiv_eprints': [
+            {
+                'categories': [
+                    'nucl-th',
+                    'astro-ph'
+                ],
+                'value': 'astro-physics'
+            }
+        ]
+    }
+    # record id: There are not examples of this kind of
+    # field in Inspire. We created some examples with
+    # the real date inside inspire.
+    head = {
+        'arxiv_eprints': [
+            {
+                'categories': [
+                    'nucl-th',
+                    'astro-ph'
+                ],
+                'value': 'astro-physics'
+            }
+        ]
+    }
+    update = {
+        'arxiv_eprints': [
+            {
+                'categories': [
+                    'nucl-th',
+                    'math'
+                ],
+                'value': 'astro-physics'
+            }, {
+                'categories': [
+                    'gr-qc'
+                ],
+                'value': 'General Relativity'
+            }
+        ]
+    }
+
+    expected_merged = {
+        'arxiv_eprints': [
+            {
+                'categories': [
+                    'nucl-th',
+                    'math'
+                ],
+                'value': 'astro-physics'
+            }, {
+                'categories': [
+                    'gr-qc'
+                ],
+                'value': 'General Relativity'
+            }
+        ]
+    }
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
 # def test_merging_authors_field():
-#     root = {}
-#     head = {}
-#     update = {}
+#     root = {"authors": [
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois U., Urbana"
+#           }
+#         ],
+#         "curated_relation": True,
+#         "full_name": "Matera, Keith",
+#         "ids": [
+#           {
+#             "schema": "INSPIRE ID",
+#             "value": "INSPIRE-00264905"
+#           }
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Matera",
+#             "Keith Matera",
+#             "Matera",
+#             "Matera K",
+#             "Matera Keith",
+#             "Matera, K",
+#             "Matera, Keith"
+#           ],
+#           "output": "Matera, Keith",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Matera",
+#           "Keith Matera",
+#           "Matera",
+#           "Matera K",
+#           "Matera Keith",
+#           "Matera, K",
+#           "Matera, Keith"
+#         ],
+#         "recid": 1051922,
+#         "record": {
+#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
+#         },
+#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
+#         },
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois U., Urbana"
+#           }
+#         ],
+#         "full_name": "Pitts, Kevin T.",
+#         "inspire_roles": [
+#           "supervisor"
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Pitts",
+#             "K T Pitts",
+#             "Kevin Pitts",
+#             "Kevin T Pitts",
+#             "Pitts",
+#             "Pitts K",
+#             "Pitts K T",
+#             "Pitts Kevin",
+#             "Pitts Kevin T",
+#             "Pitts T",
+#             "Pitts, K",
+#             "Pitts, K T",
+#             "Pitts, Kevin",
+#             "Pitts, Kevin T",
+#             "Pitts, T",
+#             "T Pitts"
+#           ],
+#           "output": "Pitts, Kevin T.",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Pitts",
+#           "K T Pitts",
+#           "Kevin Pitts",
+#           "Kevin T Pitts",
+#           "Pitts",
+#           "Pitts K",
+#           "Pitts K T",
+#           "Pitts Kevin",
+#           "Pitts Kevin T",
+#           "Pitts T",
+#           "Pitts, K",
+#           "Pitts, K T",
+#           "Pitts, Kevin",
+#           "Pitts, Kevin T",
+#           "Pitts, T",
+#           "T Pitts"
+#         ],
+#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
+#         }
+#         ]}
+#     #1308464
+#     head = {"authors": [
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois University of Urbana"
+#           }
+#         ],
+#         "curated_relation": True,
+#         "full_name": "Matera, Keith",
+#         "ids": [
+#           {
+#             "schema": "INSPIRE ID",
+#             "value": "INSPIRE-00264905"
+#           }
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Matera",
+#             "Keith Matera",
+#             "Matera",
+#             "Matera K",
+#             "Matera Keith",
+#             "Matera, K",
+#             "Matera, Keith"
+#           ],
+#           "output": "Matera, Keith",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Matera",
+#           "Keith Matera",
+#           "Matera",
+#           "Matera K",
+#           "Matera Keith",
+#           "Matera, K",
+#           "Matera, Keith"
+#         ],
+#         "recid": 1051922,
+#         "record": {
+#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
+#         },
+#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
+#         },
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois U., Urbana"
+#           }
+#         ],
+#         "full_name": "Pitts, Kevin T.",
+#         "inspire_roles": [
+#           "supervisor"
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Pitts",
+#             "K T Pitts",
+#             "Kevin Pitts",
+#             "Kevin T Pitts",
+#             "Pitts",
+#             "Pitts K",
+#             "Pitts K T",
+#             "Pitts Kevin",
+#             "Pitts Kevin T",
+#             "Pitts T",
+#             "Pitts, K",
+#             "Pitts, K T",
+#             "Pitts, Kevin",
+#             "Pitts, Kevin T",
+#             "Pitts, T",
+#             "T Pitts"
+#           ],
+#           "output": "Pitts, Kevin T.",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Pitts",
+#           "K T Pitts",
+#           "Kevin Pitts",
+#           "Kevin T Pitts",
+#           "Pitts",
+#           "Pitts K",
+#           "Pitts K T",
+#           "Pitts Kevin",
+#           "Pitts Kevin T",
+#           "Pitts T",
+#           "Pitts, K",
+#           "Pitts, K T",
+#           "Pitts, Kevin",
+#           "Pitts, Kevin T",
+#           "Pitts, T",
+#           "T Pitts"
+#         ],
+#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
+#         }
+#     ]}
+#     update = {"authors": [
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois University Urbana"
+#           }
+#         ],
+#         "curated_relation": True,
+#         "full_name": "Matera, Keith",
+#         "ids": [
+#           {
+#             "schema": "INSPIRE ID",
+#             "value": "INSPIRE-00264905"
+#           }
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Matera",
+#             "Keith Matera",
+#             "Matera",
+#             "Matera K",
+#             "Matera Keith",
+#             "Matera, K",
+#             "Matera, Keith"
+#           ],
+#           "output": "Matera, Keith",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Matera",
+#           "Keith Matera",
+#           "Matera",
+#           "Matera K",
+#           "Matera Keith",
+#           "Matera, K",
+#           "Matera, Keith"
+#         ],
+#         "recid": 1051922,
+#         "record": {
+#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
+#         },
+#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
+#         },
+#         {
+#         "affiliations": [
+#           {
+#             "recid": 902867,
+#             "record": {
+#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
+#             },
+#             "value": "Illinois U., Urbana"
+#           }
+#         ],
+#         "full_name": "Pitts, Kevin T.",
+#         "inspire_roles": [
+#           "supervisor"
+#         ],
+#         "name_suggest": {
+#           "input": [
+#             "K Pitts",
+#             "K T Pitts",
+#             "Kevin Pitts",
+#             "Kevin T Pitts",
+#             "Pitts",
+#             "Pitts K",
+#             "Pitts K T",
+#             "Pitts Kevin",
+#             "Pitts Kevin T",
+#             "Pitts T",
+#             "Pitts, K",
+#             "Pitts, K T",
+#             "Pitts, Kevin",
+#             "Pitts, Kevin T",
+#             "Pitts, T",
+#             "T Pitts"
+#           ],
+#           "output": "Pitts, Kevin T.",
+#           "payload": {
+#             "bai": None
+#           }
+#         },
+#         "name_variations": [
+#           "K Pitts",
+#           "K T Pitts",
+#           "Kevin Pitts",
+#           "Kevin T Pitts",
+#           "Pitts",
+#           "Pitts K",
+#           "Pitts K T",
+#           "Pitts Kevin",
+#           "Pitts Kevin T",
+#           "Pitts T",
+#           "Pitts, K",
+#           "Pitts, K T",
+#           "Pitts, Kevin",
+#           "Pitts, Kevin T",
+#           "Pitts, T",
+#           "T Pitts"
+#         ],
+#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
+#         }
+#         ]}
 #
-#     expected_merged = {}
-#     expected_conflict = {}
+#     expected_merged = head
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
 #     assert merged == expected_merged
 #     assert conflict == expected_conflict
 #
-#
+
 # def test_merging_affiliations_field():
 #     root = {}
 #     head = {}
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -303,7 +911,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -317,7 +925,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -331,7 +939,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -345,7 +953,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -359,7 +967,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -373,7 +981,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -387,7 +995,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -401,7 +1009,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -415,7 +1023,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -429,7 +1037,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -443,147 +1051,293 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
 #     assert merged == expected_merged
 #     assert conflict == expected_conflict
-#
-#
-# def test_merging_book_series_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_citeable_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_collaborations_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_control_number_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_copyright_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_core_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_corporate_author_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_deleted_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_deleted_records_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = {}
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
+
+
+def test_merging_book_series_field():
+    root = {
+        'book_series': [
+            {
+                'title': 'IEEE Nucl.Sci.Symp.Conf.Rec.',
+                'volume': 'bar'
+            }
+        ]
+    }
+    # record_id: 1212189
+    head = {
+        'book_series': [
+            {
+                'title': 'IEEE Nucl.Sci.Symp.Conf.Rec.',
+                'volume': 'baz'
+            }, {
+                'title': 'CMS Web-Based Monitoring',
+                'volume': 'spam'
+            }
+        ]
+    }
+    update = {
+        'book_series': [
+            {
+                'title': 'IEEE Nucl.Sci.Symp.Conf.Rec.',
+                'volume': 'spam'
+            }, {
+                'title': 'Proposal for Web Based Monitoring and Database Browsing"',
+                'volume': 'spam'
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['book_series', 0, 'volume'], 'spam']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_citeable_field():
+    root = {'citeable': False}
+    head = {'citeable': False}
+    update = {'citeable': True}
+
+    expected_merged = update
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_collaborations_field():
+    root = {
+        'collaborations': [
+            {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684121'
+                    },
+                'value': 'LHCb'
+            }
+        ]
+    }
+    # record_id: 1517390
+    head = {
+        'collaborations': [
+            {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684121'
+                    },
+                'value': 'ATLAS'
+            }, {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684122'
+                    },
+                'value': 'CMS'
+            }
+        ]
+    }
+    update = {
+        'collaborations': [
+            {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684121'
+                    },
+                'value': 'ALICE'
+            }
+        ]
+    }
+
+    expected_merged = {
+        'collaborations': [
+            {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684121'
+                    },
+                'value': 'ALICE'
+            }, {
+                'record':
+                    {
+                        '$ref': 'http://newlabs.inspirehep.net/api/literature/684122'
+                    },
+                'value': 'CMS'
+            }
+        ]
+    }
+    expected_conflict = [['SET_FIELD', ['collaborations', 0, 'value'], 'ATLAS']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_control_number_field():
+    root = {'control_number': 963517}
+    head = {'control_number': 963518}
+    update = {'control_number': 963519}
+    # record_id:
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['control_number'], 963519]]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_copyright_field():
+    root = {
+        'copyright': [
+            {
+                'holder': 'Elsevier',
+                'material': 'For open access articles',
+                'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
+                'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
+                'year': 2011
+            }
+        ]
+    }
+    # record_id: 963517
+    head = {
+        'copyright': [
+            {
+                'holder': 'elsevier',
+                'material': 'For open access articles',
+                'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
+                'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
+                'year': 2011
+            }
+        ]
+    }
+    update = {
+        'copyright': [
+            {
+                'holder': 'Elsevier',
+                'material': 'For open access articles',
+                'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
+                'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
+                'year': 2011
+            }
+        ]
+    }
+    expected_merged = update
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_core_field():
+    root = {'core': False}
+    head = {'core': False}
+    update = {'core': True}
+
+    expected_merged = update
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_corporate_author_field():
+    root = {
+        'corporate_author': [
+            'The LHCb Collaboration'
+        ]
+    }
+    # record_id: 1517390
+    head = {
+        'corporate_author': [
+            'The LHCb Collaboration',
+            'CMS Collaboration'
+        ]
+    }
+    update = {
+        'corporate_author': [
+            'CMS Collaboration'
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_deleted_field():
+    root = {'deleted': False}
+    head = {'deleted': False}
+    update = {'deleted': True}
+
+    expected_merged = update
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_deleted_records_field():
+    root = {
+        'deleted_records': [
+            {
+                '$ref': 'http://newlabs.inspirehep.net/api/record/980409'
+            }
+        ]
+    }
+    # record_id: 963741
+    head = {
+
+        'deleted_records': [
+            {
+                '$ref': 'http://newlabs.inspirehep.net/api/record/980410'
+            }
+        ]
+    }
+    update = {
+        'deleted_records': [
+            {
+                '$ref': 'http://newlabs.inspirehep.net/api/record/980419'
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
 # def test_merging_document_type_field():
 #     root = {}
 #     head = {}
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -597,7 +1351,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -611,7 +1365,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -625,7 +1379,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -639,7 +1393,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -653,7 +1407,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -667,7 +1421,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -681,7 +1435,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -695,7 +1449,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -709,7 +1463,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -723,7 +1477,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -737,7 +1491,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -751,7 +1505,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -765,7 +1519,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -779,7 +1533,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -793,7 +1547,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -807,7 +1561,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -821,7 +1575,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -835,7 +1589,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -849,7 +1603,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -863,7 +1617,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -877,7 +1631,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -891,7 +1645,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -905,7 +1659,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -919,7 +1673,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -933,7 +1687,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -947,7 +1701,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -961,7 +1715,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -975,7 +1729,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -989,7 +1743,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -1003,7 +1757,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
@@ -1017,7 +1771,7 @@ def test_merging_fft_field():
 #     update = {}
 #
 #     expected_merged = {}
-#     expected_conflict = {}
+#     expected_conflict = None
 #
 #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 #
