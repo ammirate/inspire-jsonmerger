@@ -68,16 +68,16 @@ class NewIDNormalizer(object):
         return None
 
 
-class AuthorComparator(DistanceFunctionComparator):
-    threhsold = 0.12
-    distance_function = AuthorNameDistanceCalculator(author_tokenize)
-    norm_functions = [
-            NewIDNormalizer('ORCID'),
-            NewIDNormalizer('INSPIRE BAI'),
-            AuthorNameNormalizer(author_tokenize),
-            AuthorNameNormalizer(author_tokenize, 1),
-            AuthorNameNormalizer(author_tokenize, 1, True)
-    ]
+# class AuthorComparator(DistanceFunctionComparator):
+#     threhsold = 0.12
+#     distance_function = AuthorNameDistanceCalculator(author_tokenize)
+#     norm_functions = [
+#             NewIDNormalizer('ORCID'),
+#             NewIDNormalizer('INSPIRE BAI'),
+#             AuthorNameNormalizer(author_tokenize),
+#             AuthorNameNormalizer(author_tokenize, 1),
+#             AuthorNameNormalizer(author_tokenize, 1, True)
+#     ]
 
 
 def get_pk_comparator(primary_key_fields, normalization_functions=None):
@@ -88,62 +88,72 @@ def get_pk_comparator(primary_key_fields, normalization_functions=None):
     return Ret
 
 
+# already present
 SourceComparator = get_pk_comparator(['source'])
-AffiliationComparator = get_pk_comparator(['value'])  # FIXME: use ValueComparator
+ValueComparator = get_pk_comparator(['value'])
 CollectionsComparator = get_pk_comparator(['primary'])
 ExtSysNumberComparator = get_pk_comparator(['institute'])
 URLComparator = get_pk_comparator(['url'])
-PubInfoComparator = get_pk_comparator([
-    ['journal_title', 'journal_volume', 'page_start'],
-    ['journal_title', 'journal_volume', 'artid']
-])
+PubInfoComparator = get_pk_comparator(
+    [
+        ['journal_title', 'journal_volume', 'page_start'],
+        ['journal_title', 'journal_volume', 'artid']
+    ]
+)
 
+#new comparators
+AcceleratorExperimentsComparator = get_pk_comparator(['version_id'])
+AcquisitionSourceComparator = get_pk_comparator(['version_id'])
+FilesComparator = get_pk_comparator(['version_id'])
 
-# new comparators
-
+AffiliationComparator = get_pk_comparator(['recid'])
+AuthorComparator = get_pk_comparator(['full_name'])
+CreationDatetimeComparator = get_pk_comparator(['creation_datetime'])
 DateComparator = get_pk_comparator(['date'])
-ValueComparator = get_pk_comparator(['value'])
-SchemaComparator = get_pk_comparator(['schema'])
+
 FundingInfoComparator = get_pk_comparator(['project_number'])
+HolderComparator = get_pk_comparator(['holder'])
 ImprintsComparator = get_pk_comparator(['publisher'])
-LicenseComparator = get_pk_comparator(['imposing'])
-RefComparator = get_pk_comparator(['$ref'])
-PIDComparator = get_pk_comparator(['value'])
-# RecordComparator = get_pk_comparator(['thesis_info.record.$ref'])
 LanguageComparator = get_pk_comparator(['language'])
+LicenseComparator = get_pk_comparator(['imposing'])
+
+PIDComparator = get_pk_comparator(['value'])
+ValueComparator = get_pk_comparator(['value'])
+
+RecordComparator = get_pk_comparator(['record.$ref'])
+RefComparator = get_pk_comparator(['$ref'])
+SchemaComparator = get_pk_comparator(['schema'])
+TitleComparator = get_pk_comparator(['title'])
+
+# RecordComparator = get_pk_comparator(['thesis_info.record.$ref'])
+
 
 COMPARATORS = {
     '_desy_bookkeeping': DateComparator,
-    '_export_to': 'has to be defined/implmented',
-    '_fft': 'has to be defined/implmented',
-    '_files': 'has to be defined/implmented',
-    '_private_notes': 'has to be defined/implmented',
-    'abstracts': 'has to be defined/implmented',
-    'accelerator_experiments': 'has to be defined/implmented',
-    'acquisition_source': 'has to be defined/implmented',
-    'arxiv_eprints': 'has to be defined/implmented',
-    'authors': AuthorComparator,
-    'authors.affiliations': AffiliationComparator,
-    'authors.alternative_names': 'has to be defined/implmented',
-    'authors.credit_roles': 'has to be defined/implmented',
-    'authors.curated_relation': 'has to be defined/implmented',
-    'authors.emails': 'has to be defined/implmented',
-    'authors.full_name': 'has to be defined/implmented',
-    'authors.ids': 'has to be defined/implmented',
-    'authors.inspire_roles': 'has to be defined/implmented',
-    'authors.raw_affiliations': 'has to be defined/implmented',
-    'authors.record': 'has to be defined/implmented',
-    'authors.signature_block': 'has to be defined/implmented',
-    'authors.uuid': 'has to be defined/implmented',
-    'book_series': 'has to be defined/implmented',
-    'citeable': 'has to be defined/implmented',
-    'collaborations': 'has to be defined/implmented',
-    'control_number': 'has to be defined/implmented',
-    'copyright': 'has to be defined/implmented',
-    'core': 'has to be defined/implmented',
-    'corporate_author': 'has to be defined/implmented',
-    'deleted': 'has to be defined/implmented',
-    'deleted_records': 'has to be defined/implmented',
+    '_fft': CreationDatetimeComparator,
+    '_files': FilesComparator,
+    '_private_notes': SourceComparator,
+    'abstracts': SourceComparator,
+    'accelerator_experiments': AcceleratorExperimentsComparator,
+    'acquisition_source': SourceComparator,
+    'arxiv_eprints': ValueComparator,
+    # 'authors': AuthorComparator,
+    # 'authors.affiliations': AffiliationComparator,
+    # 'authors.alternative_names': 'has to be defined/implemented',
+    # 'authors.credit_roles': 'has to be defined/implemented',
+    # 'authors.curated_relation': 'has to be defined/implemented',
+    # 'authors.emails': 'has to be defined/implemented',
+    # 'authors.full_name': 'has to be defined/implemented',
+    # 'authors.ids': 'has to be defined/implemented',
+    # 'authors.inspire_roles': 'has to be defined/implemented',
+    # 'authors.raw_affiliations': 'has to be defined/implemented',
+    # 'authors.record': 'has to be defined/implemented',
+    # 'authors.signature_block': 'has to be defined/implemented',
+    # 'authors.uuid': 'has to be defined/implemented',
+    'book_series': TitleComparator,
+    'collaborations': RecordComparator,
+    'copyright': HolderComparator,
+    'deleted_records': RefComparator,
     # 'document_type': 'has to be defined/implmented',
     'dois': ValueComparator,
     # 'editions': 'has to be defined/implmented',
@@ -183,36 +193,30 @@ COMPARATORS = {
 LIST_MERGE_OPS = {
     '_collections': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     '_desy_bookkeeping': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    '_export_to': 'has to be defined',
-    '_fft': 'has to be defined',
-    '_files': 'has to be defined',
-    '_private_notes': 'has to be defined',
-    'abstracts': 'has to be defined',
-    'accelerator_experiments': 'has to be defined',
-    'acquisition_source': 'has to be defined',
-    'arxiv_eprints': 'has to be defined',
-    'authors': 'has to be defined',
-    'authors.affiliations': 'has to be defined',
-    'authors.alternative_names': 'has to be defined',
-    'authors.credit_roles': 'has to be defined',
-    'authors.curated_relation': 'has to be defined',
-    'authors.emails': 'has to be defined',
-    'authors.full_name': 'has to be defined',
-    'authors.ids': 'has to be defined',
-    'authors.inspire_roles': 'has to be defined',
-    'authors.raw_affiliations': 'has to be defined',
-    'authors.record': 'has to be defined',
-    'authors.signature_block': 'has to be defined',
-    'authors.uuid': 'has to be defined',
-    'book_series': 'has to be defined',
-    'citeable': 'has to be defined',
-    'collaborations': 'has to be defined',
-    'control_number': 'has to be defined',
-    'copyright': 'has to be defined',
-    'core': 'has to be defined',
-    'corporate_author': 'has to be defined',
-    'deleted': 'has to be defined',
-    'deleted_records': 'has to be defined',
+    '_fft': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    '_files': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    '_private_notes': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'abstracts': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
+    'accelerator_experiments': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'arxiv_eprints': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
+    # 'authors': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    # 'authors.affiliations': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    # 'authors.alternative_names': 'has to be defined',
+    # 'authors.credit_roles': 'has to be defined',
+    # 'authors.curated_relation': 'has to be defined',
+    # 'authors.emails': 'has to be defined',
+    # 'authors.full_name': 'has to be defined',
+    # 'authors.ids': 'has to be defined',
+    # 'authors.inspire_roles': 'has to be defined',
+    # 'authors.raw_affiliations': 'has to be defined',
+    # 'authors.record': 'has to be defined',
+    # 'authors.signature_block': 'has to be defined',
+    # 'authors.uuid': 'has to be defined',
+    'book_series': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'collaborations': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
+    'copyright': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'corporate_author': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'deleted_records': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     'document_type': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'dois': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
     'editions':  UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
@@ -250,6 +254,15 @@ LIST_MERGE_OPS = {
 FIELD_MERGE_OPS = {
     '$schema': DictMergerOps.FALLBACK_KEEP_HEAD,
     '_desy_bookkeeping': DictMergerOps.FALLBACK_KEEP_HEAD,
+    '_export_to': DictMergerOps.FALLBACK_KEEP_HEAD,
+    '_fft': DictMergerOps.FALLBACK_KEEP_HEAD,
+    '_private_notes': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'accelerator_experiments': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'acquisition_source': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'book_series': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'control_number': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'deleted': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'deleted_records': DictMergerOps.FALLBACK_KEEP_HEAD,
     'external_system_identifiers': DictMergerOps.FALLBACK_KEEP_HEAD,
     'funding_info': DictMergerOps.FALLBACK_KEEP_HEAD,
     'legacy_creation_date': DictMergerOps.FALLBACK_KEEP_HEAD,
@@ -263,5 +276,4 @@ FIELD_MERGE_OPS = {
     'thesis_info.institutions': DictMergerOps.FALLBACK_KEEP_HEAD,
     'title_translations': DictMergerOps.FALLBACK_KEEP_HEAD,
     'urls': DictMergerOps.FALLBACK_KEEP_HEAD,
-
 }
