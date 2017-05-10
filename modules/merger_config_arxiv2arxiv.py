@@ -263,7 +263,6 @@ FIELD_MERGE_OPS = {
     'control_number': DictMergerOps.FALLBACK_KEEP_HEAD,
     'deleted': DictMergerOps.FALLBACK_KEEP_HEAD,
     'deleted_records': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'external_system_identifiers': DictMergerOps.FALLBACK_KEEP_HEAD,
     'funding_info': DictMergerOps.FALLBACK_KEEP_HEAD,
     'legacy_creation_date': DictMergerOps.FALLBACK_KEEP_HEAD,
     'new_record': DictMergerOps.FALLBACK_KEEP_HEAD,
