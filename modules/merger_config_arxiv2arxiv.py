@@ -62,22 +62,22 @@ class NewIDNormalizer(object):
         optimisation for faster matches."""
 
         for id_field in author.get('ids', []):
-            if id_field.get('type').lower() == self.id_type.lower():
+            if id_field.get('schema').lower() == self.id_type.lower():
                 return id_field.get('value')
         # This is safe since the normalization is not the final decider.
         return None
 
 
-# class AuthorComparator(DistanceFunctionComparator):
-#     threhsold = 0.12
-#     distance_function = AuthorNameDistanceCalculator(author_tokenize)
-#     norm_functions = [
-#             NewIDNormalizer('ORCID'),
-#             NewIDNormalizer('INSPIRE BAI'),
-#             AuthorNameNormalizer(author_tokenize),
-#             AuthorNameNormalizer(author_tokenize, 1),
-#             AuthorNameNormalizer(author_tokenize, 1, True)
-#     ]
+class AuthorComparator(DistanceFunctionComparator):
+    threhsold = 0.12
+    distance_function = AuthorNameDistanceCalculator(author_tokenize)
+    norm_functions = [
+            NewIDNormalizer('ORCID'),
+            NewIDNormalizer('INSPIRE BAI'),
+            AuthorNameNormalizer(author_tokenize),
+            AuthorNameNormalizer(author_tokenize, 1),
+            AuthorNameNormalizer(author_tokenize, 1, True)
+    ]
 
 
 def get_pk_comparator(primary_key_fields, normalization_functions=None):
@@ -106,8 +106,7 @@ AcceleratorExperimentsComparator = get_pk_comparator(['version_id'])
 AcquisitionSourceComparator = get_pk_comparator(['version_id'])
 FilesComparator = get_pk_comparator(['version_id'])
 
-AffiliationComparator = get_pk_comparator(['recid'])
-AuthorComparator = get_pk_comparator(['full_name'])
+AffiliationComparator = AuthorComparator # get_pk_comparator(['value'])
 CreationDatetimeComparator = get_pk_comparator(['creation_datetime'])
 DateComparator = get_pk_comparator(['date'])
 
@@ -137,16 +136,16 @@ COMPARATORS = {
     'accelerator_experiments': AcceleratorExperimentsComparator,
     'acquisition_source': SourceComparator,
     'arxiv_eprints': ValueComparator,
-    # 'authors': AuthorComparator,
-    # 'authors.affiliations': AffiliationComparator,
+    'authors': AuthorComparator,
+    'authors.affiliations': AffiliationComparator,
     # 'authors.alternative_names': 'has to be defined/implemented',
     # 'authors.credit_roles': 'has to be defined/implemented',
     # 'authors.curated_relation': 'has to be defined/implemented',
     # 'authors.emails': 'has to be defined/implemented',
     # 'authors.full_name': 'has to be defined/implemented',
-    # 'authors.ids': 'has to be defined/implemented',
+    'authors.ids': SchemaComparator,
     # 'authors.inspire_roles': 'has to be defined/implemented',
-    # 'authors.raw_affiliations': 'has to be defined/implemented',
+    'authors.raw_affiliations': ValueComparator,
     # 'authors.record': 'has to be defined/implemented',
     # 'authors.signature_block': 'has to be defined/implemented',
     # 'authors.uuid': 'has to be defined/implemented',
@@ -199,19 +198,15 @@ LIST_MERGE_OPS = {
     'abstracts': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
     'accelerator_experiments': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     'arxiv_eprints': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
-    # 'authors': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
-    # 'authors.affiliations': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    # 'authors.alternative_names': 'has to be defined',
-    # 'authors.credit_roles': 'has to be defined',
-    # 'authors.curated_relation': 'has to be defined',
-    # 'authors.emails': 'has to be defined',
-    # 'authors.full_name': 'has to be defined',
-    # 'authors.ids': 'has to be defined',
-    # 'authors.inspire_roles': 'has to be defined',
-    # 'authors.raw_affiliations': 'has to be defined',
-    # 'authors.record': 'has to be defined',
-    # 'authors.signature_block': 'has to be defined',
-    # 'authors.uuid': 'has to be defined',
+    'authors': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    'authors.affiliations': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'authors.alternative_names': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
+    'authors.credit_roles': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
+    'authors.emails': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    'authors.full_name': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'authors.ids': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'authors.inspire_roles': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'authors.raw_affiliations': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'book_series': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     'collaborations': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
     'copyright': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
@@ -251,6 +246,47 @@ LIST_MERGE_OPS = {
     # 'withdrawn': 'has to be defined'
 }
 
+# root = {}
+# head = {
+#     'authors': [
+#         {
+#             'uuid': 'A',
+#             'full_name': 'Cox, Brian',
+#         }
+#     ]
+# }
+# update = {
+#     'authors': [
+#         {
+#             'uuid': 'B',
+#             'full_name': 'Cox, Brian',
+#         }
+#     ]
+# }
+#
+# FIELD_MERGE_OPS = {
+#     'authors': DictMergerOps.FALLBACK_KEEP_HEAD,
+#     'authors.full_name': DictMergerOps.FALLBACK_KEEP_UPDATE,
+# }
+# merger = Merger(
+#     root, head, update,
+#     DictMergerOps.FALLBACK_KEEP_UPDATE,  # Most common operation
+# )
+#
+#
+# the uuid field is using the author rule, because authors.uuid is not specified.
+# The merger is going to take the strategy from the closest parent defined
+# MERGED = {
+#     'authors': [
+#         {
+#             'uuid': 'A',
+#             'full_name': 'Cox, Brian',
+#         }
+#     ]
+# }
+
+
+
 FIELD_MERGE_OPS = {
     '$schema': DictMergerOps.FALLBACK_KEEP_HEAD,
     '_desy_bookkeeping': DictMergerOps.FALLBACK_KEEP_HEAD,
@@ -259,6 +295,16 @@ FIELD_MERGE_OPS = {
     '_private_notes': DictMergerOps.FALLBACK_KEEP_HEAD,
     'accelerator_experiments': DictMergerOps.FALLBACK_KEEP_HEAD,
     'acquisition_source': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.affiliations': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.curated_relation': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.full_name': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.ids': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.inspire_roles': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.record': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'authors.raw_affiliations': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'authors.signature_block': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'authors.uuid': DictMergerOps.FALLBACK_KEEP_UPDATE,
     'book_series': DictMergerOps.FALLBACK_KEEP_HEAD,
     'control_number': DictMergerOps.FALLBACK_KEEP_HEAD,
     'deleted': DictMergerOps.FALLBACK_KEEP_HEAD,
