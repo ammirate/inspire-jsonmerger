@@ -102,16 +102,15 @@ PubInfoComparator = get_pk_comparator(
 )
 
 #new comparators
-AcceleratorExperimentsComparator = get_pk_comparator(['version_id'])
 AcquisitionSourceComparator = get_pk_comparator(['version_id'])
 FilesComparator = get_pk_comparator(['version_id'])
 
-AffiliationComparator = AuthorComparator # get_pk_comparator(['value'])
+AffiliationComparator = get_pk_comparator(['record.$ref', 'value'])
 CreationDatetimeComparator = get_pk_comparator(['creation_datetime'])
 DateComparator = get_pk_comparator(['date'])
 
 FundingInfoComparator = get_pk_comparator(['project_number'])
-HolderComparator = get_pk_comparator(['holder'])
+MaterialComparator = get_pk_comparator(['material'])
 ImprintsComparator = get_pk_comparator(['publisher'])
 LanguageComparator = get_pk_comparator(['language'])
 LicenseComparator = get_pk_comparator(['imposing'])
@@ -133,7 +132,6 @@ COMPARATORS = {
     '_files': FilesComparator,
     '_private_notes': SourceComparator,
     'abstracts': SourceComparator,
-    'accelerator_experiments': AcceleratorExperimentsComparator,
     'acquisition_source': SourceComparator,
     'arxiv_eprints': ValueComparator,
     'authors': AuthorComparator,
@@ -145,13 +143,13 @@ COMPARATORS = {
     # 'authors.full_name': 'has to be defined/implemented',
     'authors.ids': SchemaComparator,
     # 'authors.inspire_roles': 'has to be defined/implemented',
-    'authors.raw_affiliations': ValueComparator,
+    'authors.raw_affiliations': SourceComparator,
     # 'authors.record': 'has to be defined/implemented',
     # 'authors.signature_block': 'has to be defined/implemented',
     # 'authors.uuid': 'has to be defined/implemented',
     'book_series': TitleComparator,
     'collaborations': RecordComparator,
-    'copyright': HolderComparator,
+    'copyright': MaterialComparator,
     'deleted_records': RefComparator,
     # 'document_type': 'has to be defined/implmented',
     'dois': ValueComparator,
@@ -245,47 +243,6 @@ LIST_MERGE_OPS = {
     'urls': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
     # 'withdrawn': 'has to be defined'
 }
-
-# root = {}
-# head = {
-#     'authors': [
-#         {
-#             'uuid': 'A',
-#             'full_name': 'Cox, Brian',
-#         }
-#     ]
-# }
-# update = {
-#     'authors': [
-#         {
-#             'uuid': 'B',
-#             'full_name': 'Cox, Brian',
-#         }
-#     ]
-# }
-#
-# FIELD_MERGE_OPS = {
-#     'authors': DictMergerOps.FALLBACK_KEEP_HEAD,
-#     'authors.full_name': DictMergerOps.FALLBACK_KEEP_UPDATE,
-# }
-# merger = Merger(
-#     root, head, update,
-#     DictMergerOps.FALLBACK_KEEP_UPDATE,  # Most common operation
-# )
-#
-#
-# the uuid field is using the author rule, because authors.uuid is not specified.
-# The merger is going to take the strategy from the closest parent defined
-# MERGED = {
-#     'authors': [
-#         {
-#             'uuid': 'A',
-#             'full_name': 'Cox, Brian',
-#         }
-#     ]
-# }
-
-
 
 FIELD_MERGE_OPS = {
     '$schema': DictMergerOps.FALLBACK_KEEP_HEAD,

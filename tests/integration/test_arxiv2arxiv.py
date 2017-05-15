@@ -30,7 +30,7 @@ from json_merger.merger import Merger
 from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
-from modules.merger_config_arxiv2arxiv import (
+from inspire_json_merger.merger_config_arxiv2arxiv import (
     COMPARATORS,
     LIST_MERGE_OPS,
     FIELD_MERGE_OPS
@@ -56,6 +56,7 @@ def json_merger_arxiv_to_arxiv(root, head, update):
     return merged, conflicts
 
 
+@pytest.mark.xfail()
 @pytest.mark.parametrize('scenario', ['arxiv2arxiv'])
 def test_complete_merge(update_fixture_loader, scenario):
     root, head, update = update_fixture_loader.load_test(scenario)
@@ -65,6 +66,5 @@ def test_complete_merge(update_fixture_loader, scenario):
     expected_merged = {}
     expected_conflict = []
 
-    import pdb; pdb.set_trace()
     assert merged == expected_merged
     assert conflict == expected_conflict

@@ -30,7 +30,7 @@ from json_merger.merger import Merger
 from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
-from modules.merger_config_arxiv2arxiv import (
+from inspire_json_merger.merger_config_arxiv2arxiv import (
     COMPARATORS,
     LIST_MERGE_OPS,
     FIELD_MERGE_OPS
@@ -599,7 +599,7 @@ def test_merging_authors_field():
     assert conflict == expected_conflict
 
 
-def test_merging_affiliations_field():
+def test_merging_affiliations_field_per_ref():
     root = {}
     head = {
         'authors': [
@@ -655,7 +655,80 @@ def test_merging_affiliations_field():
     }
     expected_conflict = [
         ['SET_FIELD', ['authors', 0, 'uuid'], '160b80bf-7553-47f0-b40b-327e28e7756d'],
-        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.']
+        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'value'], 'Illinois U., Urbana'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'recid'], 902868]
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_affiliations_field_per_value():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756d',
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,
+                         'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # last digit changed
+                'full_name': 'Cox, Brian E.',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902868,  # last digit changed
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902866'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_merged = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # update uuid
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,  # head recid
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    expected_conflict = [
+        ['SET_FIELD', ['authors', 0, 'uuid'], '160b80bf-7553-47f0-b40b-327e28e7756d'],
+        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'recid'], 902868],
+        [
+            'SET_FIELD',
+            ['authors', 0, 'affiliations', 0, 'record', '$ref'],
+            'http://newlabs.inspirehep.net/api/institutions/902866'
+        ]
     ]
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
@@ -1006,7 +1079,7 @@ def test_merging_raw_affiliations_field():
                 'full_name': 'Pitts, Kevin T',
                 'raw_affiliations': [
                     {
-                        'source': 'hepcrawl',
+                        'source': 'arxiv',
                         'value': 'Department of Physics, Indiana University, Bloomington, IN 47405, USA'
                     }
                 ]
@@ -1020,7 +1093,7 @@ def test_merging_raw_affiliations_field():
                 'raw_affiliations': [
                     {
                         'source': 'arxiv',
-                        'value': 'Department of Physics, Indiana University, Bloomington, IN 47405, USA'
+                        'value': 'Department of Physics, Indiana University, Bloomington, IN 47405, US'
                     }
                 ]
             }
@@ -1028,7 +1101,13 @@ def test_merging_raw_affiliations_field():
     }
 
     expected_merged = update
-    expected_conflict = [['SET_FIELD', ['authors', 0, 'raw_affiliations', 0, 'source'], 'hepcrawl']]
+    expected_conflict = [
+        [
+            'SET_FIELD',
+            ['authors', 0, 'raw_affiliations', 0, 'value'],
+            'Department of Physics, Indiana University, Bloomington, IN 47405, USA'
+        ]
+    ]
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
@@ -1273,7 +1352,7 @@ def test_merging_copyright_field():
         'copyright': [
             {
                 'holder': 'Elsevier',
-                'material': 'For open access articles',
+                'material': 'For open Access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
                 'year': 2011
@@ -1284,7 +1363,7 @@ def test_merging_copyright_field():
     head = {
         'copyright': [
             {
-                'holder': 'elsevier',
+                'holder': 'Elsevier',
                 'material': 'For open access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
@@ -1295,8 +1374,8 @@ def test_merging_copyright_field():
     update = {
         'copyright': [
             {
-                'holder': 'Elsevier',
-                'material': 'For open access articles',
+                'holder': 'elsevier',
+                'material': 'For open Access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
                 'year': 2011
@@ -2348,338 +2427,3 @@ def test_merging_wirthdrawn_field():
     assert merged == expected_merged
     assert conflict == expected_conflict
 
-
-    # def test_merging_authors_field():
-    #     root = {"authors": [
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois U., Urbana"
-    #           }
-    #         ],
-    #         "curated_relation": True,
-    #         "full_name": "Matera, Keith",
-    #         "ids": [
-    #           {
-    #             "schema": "INSPIRE ID",
-    #             "value": "INSPIRE-00264905"
-    #           }
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Matera",
-    #             "Keith Matera",
-    #             "Matera",
-    #             "Matera K",
-    #             "Matera Keith",
-    #             "Matera, K",
-    #             "Matera, Keith"
-    #           ],
-    #           "output": "Matera, Keith",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Matera",
-    #           "Keith Matera",
-    #           "Matera",
-    #           "Matera K",
-    #           "Matera Keith",
-    #           "Matera, K",
-    #           "Matera, Keith"
-    #         ],
-    #         "recid": 1051922,
-    #         "record": {
-    #           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-    #         },
-    #         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-    #         },
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois U., Urbana"
-    #           }
-    #         ],
-    #         "full_name": "Pitts, Kevin T.",
-    #         "inspire_roles": [
-    #           "supervisor"
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Pitts",
-    #             "K T Pitts",
-    #             "Kevin Pitts",
-    #             "Kevin T Pitts",
-    #             "Pitts",
-    #             "Pitts K",
-    #             "Pitts K T",
-    #             "Pitts Kevin",
-    #             "Pitts Kevin T",
-    #             "Pitts T",
-    #             "Pitts, K",
-    #             "Pitts, K T",
-    #             "Pitts, Kevin",
-    #             "Pitts, Kevin T",
-    #             "Pitts, T",
-    #             "T Pitts"
-    #           ],
-    #           "output": "Pitts, Kevin T.",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Pitts",
-    #           "K T Pitts",
-    #           "Kevin Pitts",
-    #           "Kevin T Pitts",
-    #           "Pitts",
-    #           "Pitts K",
-    #           "Pitts K T",
-    #           "Pitts Kevin",
-    #           "Pitts Kevin T",
-    #           "Pitts T",
-    #           "Pitts, K",
-    #           "Pitts, K T",
-    #           "Pitts, Kevin",
-    #           "Pitts, Kevin T",
-    #           "Pitts, T",
-    #           "T Pitts"
-    #         ],
-    #         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-    #         }
-    #         ]}
-    #     #1308464
-    #     head = {"authors": [
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois University of Urbana"
-    #           }
-    #         ],
-    #         "curated_relation": True,
-    #         "full_name": "Matera, Keith",
-    #         "ids": [
-    #           {
-    #             "schema": "INSPIRE ID",
-    #             "value": "INSPIRE-00264905"
-    #           }
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Matera",
-    #             "Keith Matera",
-    #             "Matera",
-    #             "Matera K",
-    #             "Matera Keith",
-    #             "Matera, K",
-    #             "Matera, Keith"
-    #           ],
-    #           "output": "Matera, Keith",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Matera",
-    #           "Keith Matera",
-    #           "Matera",
-    #           "Matera K",
-    #           "Matera Keith",
-    #           "Matera, K",
-    #           "Matera, Keith"
-    #         ],
-    #         "recid": 1051922,
-    #         "record": {
-    #           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-    #         },
-    #         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-    #         },
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois U., Urbana"
-    #           }
-    #         ],
-    #         "full_name": "Pitts, Kevin T.",
-    #         "inspire_roles": [
-    #           "supervisor"
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Pitts",
-    #             "K T Pitts",
-    #             "Kevin Pitts",
-    #             "Kevin T Pitts",
-    #             "Pitts",
-    #             "Pitts K",
-    #             "Pitts K T",
-    #             "Pitts Kevin",
-    #             "Pitts Kevin T",
-    #             "Pitts T",
-    #             "Pitts, K",
-    #             "Pitts, K T",
-    #             "Pitts, Kevin",
-    #             "Pitts, Kevin T",
-    #             "Pitts, T",
-    #             "T Pitts"
-    #           ],
-    #           "output": "Pitts, Kevin T.",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Pitts",
-    #           "K T Pitts",
-    #           "Kevin Pitts",
-    #           "Kevin T Pitts",
-    #           "Pitts",
-    #           "Pitts K",
-    #           "Pitts K T",
-    #           "Pitts Kevin",
-    #           "Pitts Kevin T",
-    #           "Pitts T",
-    #           "Pitts, K",
-    #           "Pitts, K T",
-    #           "Pitts, Kevin",
-    #           "Pitts, Kevin T",
-    #           "Pitts, T",
-    #           "T Pitts"
-    #         ],
-    #         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-    #         }
-    #     ]}
-    #     update = {"authors": [
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois University Urbana"
-    #           }
-    #         ],
-    #         "curated_relation": True,
-    #         "full_name": "Matera, Keith",
-    #         "ids": [
-    #           {
-    #             "schema": "INSPIRE ID",
-    #             "value": "INSPIRE-00264905"
-    #           }
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Matera",
-    #             "Keith Matera",
-    #             "Matera",
-    #             "Matera K",
-    #             "Matera Keith",
-    #             "Matera, K",
-    #             "Matera, Keith"
-    #           ],
-    #           "output": "Matera, Keith",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Matera",
-    #           "Keith Matera",
-    #           "Matera",
-    #           "Matera K",
-    #           "Matera Keith",
-    #           "Matera, K",
-    #           "Matera, Keith"
-    #         ],
-    #         "recid": 1051922,
-    #         "record": {
-    #           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-    #         },
-    #         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-    #         },
-    #         {
-    #         "affiliations": [
-    #           {
-    #             "recid": 902867,
-    #             "record": {
-    #               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-    #             },
-    #             "value": "Illinois U., Urbana"
-    #           }
-    #         ],
-    #         "full_name": "Pitts, Kevin T.",
-    #         "inspire_roles": [
-    #           "supervisor"
-    #         ],
-    #         "name_suggest": {
-    #           "input": [
-    #             "K Pitts",
-    #             "K T Pitts",
-    #             "Kevin Pitts",
-    #             "Kevin T Pitts",
-    #             "Pitts",
-    #             "Pitts K",
-    #             "Pitts K T",
-    #             "Pitts Kevin",
-    #             "Pitts Kevin T",
-    #             "Pitts T",
-    #             "Pitts, K",
-    #             "Pitts, K T",
-    #             "Pitts, Kevin",
-    #             "Pitts, Kevin T",
-    #             "Pitts, T",
-    #             "T Pitts"
-    #           ],
-    #           "output": "Pitts, Kevin T.",
-    #           "payload": {
-    #             "bai": None
-    #           }
-    #         },
-    #         "name_variations": [
-    #           "K Pitts",
-    #           "K T Pitts",
-    #           "Kevin Pitts",
-    #           "Kevin T Pitts",
-    #           "Pitts",
-    #           "Pitts K",
-    #           "Pitts K T",
-    #           "Pitts Kevin",
-    #           "Pitts Kevin T",
-    #           "Pitts T",
-    #           "Pitts, K",
-    #           "Pitts, K T",
-    #           "Pitts, Kevin",
-    #           "Pitts, Kevin T",
-    #           "Pitts, T",
-    #           "T Pitts"
-    #         ],
-    #         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-    #         }
-    #         ]}
-    #
-    #     expected_merged = head
-    #     expected_conflict = None
-    #
-    #     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-    #
-    #     assert merged == expected_merged
-    #     assert conflict == expected_conflict
