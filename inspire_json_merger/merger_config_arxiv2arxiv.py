@@ -124,7 +124,14 @@ SchemaComparator = get_pk_comparator(['schema'])
 TitleComparator = get_pk_comparator(['title'])
 
 # RecordComparator = get_pk_comparator(['thesis_info.record.$ref'])
-
+ReferencesComparator = get_pk_comparator(['raw_ref.value'])
+SingleReferenceComparator = get_pk_comparator([
+    ['arxiv_eprint'],
+    ['dois'],
+    ['isbn'],
+    ['book_series.title'],
+    ['pubblication_info']
+])
 
 COMPARATORS = {
     '_desy_bookkeeping': DateComparator,
@@ -172,7 +179,10 @@ COMPARATORS = {
     'publication_info': PubInfoComparator,
     # 'publication_type': 'has to be defined/implmented',
     # 'refereed': 'has to be defined/implmented',
-    'references': 'has to be defined/implmented',
+    'references': ReferencesComparator,
+    'references.reference': SingleReferenceComparator,
+    'references.reference.authors': AuthorComparator,
+
     'report_numbers': SourceComparator,
     # 'self': 'has to be defined/implmented',
     # 'special_collections': 'has to be defined/implmented',
@@ -231,7 +241,23 @@ LIST_MERGE_OPS = {
     'publication_info': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
     'publication_type': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     # 'refereed': 'has to be defined',
-    'references': 'has to be defined',
+
+    'references': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    'references.raw_refs':
+        UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
+    'references.reference.authors':
+        UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    'references.reference.collaboration':
+        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.dois':
+        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.misc':
+        UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
+    'references.reference.persistent_identifiers':
+        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.urls':
+        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+
     'report_numbers': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     # 'self': 'has to be defined',
     'special_collections': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
@@ -278,4 +304,14 @@ FIELD_MERGE_OPS = {
     'thesis_info.institutions': DictMergerOps.FALLBACK_KEEP_HEAD,
     'title_translations': DictMergerOps.FALLBACK_KEEP_HEAD,
     'urls': DictMergerOps.FALLBACK_KEEP_HEAD,
+
+    'references': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.raw_refs': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'references.reference.arxiv_eprint': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'references.reference.authors': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'references.reference.collaboration': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'references.reference.misc': DictMergerOps.FALLBACK_KEEP_HEAD,
+    'references.reference.pubblication_info': DictMergerOps.FALLBACK_KEEP_HEAD,
+
 }

@@ -2427,3 +2427,60 @@ def test_merging_wirthdrawn_field():
     assert merged == expected_merged
     assert conflict == expected_conflict
 
+
+def test_references_field():
+    root = {
+        "references": [
+            {
+                "reference": {
+                    "authors": [
+                        {
+                            "full_name": "Cox, Brian"
+                        }
+                    ],
+                }
+            }
+        ]
+    }
+
+    head = {
+        "references": [
+            {
+
+                "reference":        {
+                    "authors": [
+                        {
+                            "full_name": "Cox, Brian",
+                            "inspire_role": "author"
+                        },
+                        {
+                            "full_name": "NEW AUTHOR"
+                        }
+                    ],
+
+                }
+            }
+        ]
+    }
+
+    update = {
+        "references": [
+            {
+                "reference":        {
+                    "authors": [
+                        {
+                            "full_name": "Cox, Brian"
+                        }
+                    ],
+                }
+            },
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = head
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
