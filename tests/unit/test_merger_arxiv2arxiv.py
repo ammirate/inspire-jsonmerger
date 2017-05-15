@@ -30,7 +30,7 @@ from json_merger.merger import Merger
 from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
-from modules.merger_config_arxiv2arxiv import (
+from inspire_json_merger.merger_config_arxiv2arxiv import (
     COMPARATORS,
     LIST_MERGE_OPS,
     FIELD_MERGE_OPS
@@ -555,508 +555,658 @@ def test_merging_arxiv_eprints_field():
     assert conflict == expected_conflict
 
 
-# def test_merging_authors_field():
-#     root = {"authors": [
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois U., Urbana"
-#           }
-#         ],
-#         "curated_relation": True,
-#         "full_name": "Matera, Keith",
-#         "ids": [
-#           {
-#             "schema": "INSPIRE ID",
-#             "value": "INSPIRE-00264905"
-#           }
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Matera",
-#             "Keith Matera",
-#             "Matera",
-#             "Matera K",
-#             "Matera Keith",
-#             "Matera, K",
-#             "Matera, Keith"
-#           ],
-#           "output": "Matera, Keith",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Matera",
-#           "Keith Matera",
-#           "Matera",
-#           "Matera K",
-#           "Matera Keith",
-#           "Matera, K",
-#           "Matera, Keith"
-#         ],
-#         "recid": 1051922,
-#         "record": {
-#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-#         },
-#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-#         },
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois U., Urbana"
-#           }
-#         ],
-#         "full_name": "Pitts, Kevin T.",
-#         "inspire_roles": [
-#           "supervisor"
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Pitts",
-#             "K T Pitts",
-#             "Kevin Pitts",
-#             "Kevin T Pitts",
-#             "Pitts",
-#             "Pitts K",
-#             "Pitts K T",
-#             "Pitts Kevin",
-#             "Pitts Kevin T",
-#             "Pitts T",
-#             "Pitts, K",
-#             "Pitts, K T",
-#             "Pitts, Kevin",
-#             "Pitts, Kevin T",
-#             "Pitts, T",
-#             "T Pitts"
-#           ],
-#           "output": "Pitts, Kevin T.",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Pitts",
-#           "K T Pitts",
-#           "Kevin Pitts",
-#           "Kevin T Pitts",
-#           "Pitts",
-#           "Pitts K",
-#           "Pitts K T",
-#           "Pitts Kevin",
-#           "Pitts Kevin T",
-#           "Pitts T",
-#           "Pitts, K",
-#           "Pitts, K T",
-#           "Pitts, Kevin",
-#           "Pitts, Kevin T",
-#           "Pitts, T",
-#           "T Pitts"
-#         ],
-#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-#         }
-#         ]}
-#     #1308464
-#     head = {"authors": [
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois University of Urbana"
-#           }
-#         ],
-#         "curated_relation": True,
-#         "full_name": "Matera, Keith",
-#         "ids": [
-#           {
-#             "schema": "INSPIRE ID",
-#             "value": "INSPIRE-00264905"
-#           }
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Matera",
-#             "Keith Matera",
-#             "Matera",
-#             "Matera K",
-#             "Matera Keith",
-#             "Matera, K",
-#             "Matera, Keith"
-#           ],
-#           "output": "Matera, Keith",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Matera",
-#           "Keith Matera",
-#           "Matera",
-#           "Matera K",
-#           "Matera Keith",
-#           "Matera, K",
-#           "Matera, Keith"
-#         ],
-#         "recid": 1051922,
-#         "record": {
-#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-#         },
-#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-#         },
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois U., Urbana"
-#           }
-#         ],
-#         "full_name": "Pitts, Kevin T.",
-#         "inspire_roles": [
-#           "supervisor"
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Pitts",
-#             "K T Pitts",
-#             "Kevin Pitts",
-#             "Kevin T Pitts",
-#             "Pitts",
-#             "Pitts K",
-#             "Pitts K T",
-#             "Pitts Kevin",
-#             "Pitts Kevin T",
-#             "Pitts T",
-#             "Pitts, K",
-#             "Pitts, K T",
-#             "Pitts, Kevin",
-#             "Pitts, Kevin T",
-#             "Pitts, T",
-#             "T Pitts"
-#           ],
-#           "output": "Pitts, Kevin T.",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Pitts",
-#           "K T Pitts",
-#           "Kevin Pitts",
-#           "Kevin T Pitts",
-#           "Pitts",
-#           "Pitts K",
-#           "Pitts K T",
-#           "Pitts Kevin",
-#           "Pitts Kevin T",
-#           "Pitts T",
-#           "Pitts, K",
-#           "Pitts, K T",
-#           "Pitts, Kevin",
-#           "Pitts, Kevin T",
-#           "Pitts, T",
-#           "T Pitts"
-#         ],
-#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-#         }
-#     ]}
-#     update = {"authors": [
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois University Urbana"
-#           }
-#         ],
-#         "curated_relation": True,
-#         "full_name": "Matera, Keith",
-#         "ids": [
-#           {
-#             "schema": "INSPIRE ID",
-#             "value": "INSPIRE-00264905"
-#           }
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Matera",
-#             "Keith Matera",
-#             "Matera",
-#             "Matera K",
-#             "Matera Keith",
-#             "Matera, K",
-#             "Matera, Keith"
-#           ],
-#           "output": "Matera, Keith",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Matera",
-#           "Keith Matera",
-#           "Matera",
-#           "Matera K",
-#           "Matera Keith",
-#           "Matera, K",
-#           "Matera, Keith"
-#         ],
-#         "recid": 1051922,
-#         "record": {
-#           "$ref": "http://newlabs.inspirehep.net/api/authors/1051922"
-#         },
-#         "uuid": "110ff8b8-f73e-4959-8fbf-fe16d62d83c2"
-#         },
-#         {
-#         "affiliations": [
-#           {
-#             "recid": 902867,
-#             "record": {
-#               "$ref": "http://newlabs.inspirehep.net/api/institutions/902867"
-#             },
-#             "value": "Illinois U., Urbana"
-#           }
-#         ],
-#         "full_name": "Pitts, Kevin T.",
-#         "inspire_roles": [
-#           "supervisor"
-#         ],
-#         "name_suggest": {
-#           "input": [
-#             "K Pitts",
-#             "K T Pitts",
-#             "Kevin Pitts",
-#             "Kevin T Pitts",
-#             "Pitts",
-#             "Pitts K",
-#             "Pitts K T",
-#             "Pitts Kevin",
-#             "Pitts Kevin T",
-#             "Pitts T",
-#             "Pitts, K",
-#             "Pitts, K T",
-#             "Pitts, Kevin",
-#             "Pitts, Kevin T",
-#             "Pitts, T",
-#             "T Pitts"
-#           ],
-#           "output": "Pitts, Kevin T.",
-#           "payload": {
-#             "bai": None
-#           }
-#         },
-#         "name_variations": [
-#           "K Pitts",
-#           "K T Pitts",
-#           "Kevin Pitts",
-#           "Kevin T Pitts",
-#           "Pitts",
-#           "Pitts K",
-#           "Pitts K T",
-#           "Pitts Kevin",
-#           "Pitts Kevin T",
-#           "Pitts T",
-#           "Pitts, K",
-#           "Pitts, K T",
-#           "Pitts, Kevin",
-#           "Pitts, Kevin T",
-#           "Pitts, T",
-#           "T Pitts"
-#         ],
-#         "uuid": "800ba182-b01a-4fbb-896b-3afc3896f5de"
-#         }
-#         ]}
-#
-#     expected_merged = head
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
+def test_merging_authors_field():
+    root = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756b',
+                'full_name': 'Cox, Brian F.'
+            }
+        ]
+    }
+    head = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',
+                'full_name': 'Cox, Brian'
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756d',
+                'full_name': 'Cox, Brian E.'
+            }
+        ]
+    }
 
-# def test_merging_affiliations_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_alternative_names_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_credit_roles_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_curated_relation_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_emails_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_full_name_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_ids_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_inspire_roles_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_raw_affiliations_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_record_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_signature_block_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
-#
-#
-# def test_merging_uuid_field():
-#     root = {}
-#     head = {}
-#     update = {}
-#
-#     expected_merged = {}
-#     expected_conflict = None
-#
-#     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-#
-#     assert merged == expected_merged
-#     assert conflict == expected_conflict
+    expected_merged = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756d',
+                'full_name': 'Cox, Brian'
+            }
+        ]
+    }
+    expected_conflict = [
+        ['SET_FIELD', ['authors', 0, 'uuid'], '160b80bf-7553-47f0-b40b-327e28e7756c'],
+        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.']
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_affiliations_field_per_ref():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756d',
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,
+                         'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # last digit changed
+                'full_name': 'Cox, Brian E.',
+                'affiliations': [
+                    {
+                        'value': 'Illinois U., Urbana',
+                        'recid': 902868,  # last digit changed
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_merged = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # update uuid
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,  # head recid
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    expected_conflict = [
+        ['SET_FIELD', ['authors', 0, 'uuid'], '160b80bf-7553-47f0-b40b-327e28e7756d'],
+        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'value'], 'Illinois U., Urbana'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'recid'], 902868]
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_affiliations_field_per_value():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756d',
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,
+                         'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # last digit changed
+                'full_name': 'Cox, Brian E.',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902868,  # last digit changed
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902866'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_merged = {
+        'authors': [
+            {
+                'uuid': '160b80bf-7553-47f0-b40b-327e28e7756c',  # update uuid
+                'full_name': 'Cox, Brian',
+                'affiliations': [
+                    {
+                        'value': 'Illinois Urbana',
+                        'recid': 902867,  # head recid
+                        'record': {
+                            '$ref': 'http://newlabs.inspirehep.net/api/institutions/902867'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    expected_conflict = [
+        ['SET_FIELD', ['authors', 0, 'uuid'], '160b80bf-7553-47f0-b40b-327e28e7756d'],
+        ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.'],
+        ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'recid'], 902868],
+        [
+            'SET_FIELD',
+            ['authors', 0, 'affiliations', 0, 'record', '$ref'],
+            'http://newlabs.inspirehep.net/api/institutions/902866'
+        ]
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_alternative_names_field():
+    root = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'alternative_names': [
+                    'K Pitts',
+                    'K T Pitts',
+                    'Pitts Kevin',
+                    'Pitts Kevin T',
+                    'Pitts T',
+                    'Pitts, K',
+                    'Pitts, K T',
+                    'Pitts, Kevin',
+                    'Pitts, Kevin T',
+                    'Pitts, T',
+                ]
+            }
+        ]
+    }
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'alternative_names': [
+                    'K Pitts',
+                    'K T Pitts',
+                    'Kevin Pitts',
+                    'Kevin T Pitts',
+                    'Pitts',
+                    'Pitts K',
+                    'Pitts K T',
+                    'Pitts Kevin',
+                    'Pitts Kevin T',
+                    'Pitts T',
+                    'Pitts, K',
+                    'Pitts, K T',
+                    'Pitts, Kevin',
+                    'Pitts, Kevin T',
+                    'Pitts, T'
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'alternative_names': [
+                    'K Pitts',
+                    'K T Pitts',
+                    'Kevin Pitts',
+                    'Pitts',
+                    'Pitts K',
+                    'Pitts K T',
+                    'Pitts Kevin',
+                    'Pitts Kevin T',
+                    'Pitts T',
+                    'Pitts, K',
+                    'Pitts, K T',
+                    'Pitts, Kevin',
+                    'Pitts, Kevin T',
+                    'Pitts, T',
+                    'T Pitts'
+                ]
+            }
+        ]
+    }
+
+    expected_merged = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'alternative_names': [
+                    'K Pitts',
+                    'K T Pitts',
+                    'Kevin Pitts',
+                    'Kevin T Pitts',
+                    'Pitts',
+                    'Pitts K',
+                    'Pitts K T',
+                    'Pitts Kevin',
+                    'Pitts Kevin T',
+                    'Pitts T',
+                    'Pitts, K',
+                    'Pitts, K T',
+                    'Pitts, Kevin',
+                    'Pitts, Kevin T',
+                    'Pitts, T',
+                    'T Pitts'
+                ]
+            }
+        ]
+    }
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_credit_roles_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'credit_roles': [
+                    'Conceptualization',
+                    'Data curation',
+                    'Formal analysis',
+                    'Funding acquisition',
+                    'Investigation',
+                    'Methodology',
+                    'Project administration',
+                ]
+            }
+        ]
+    }
+
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'credit_roles': [
+                    'Resources',
+                    'Software',
+                    'Supervision',
+                    'Validation',
+                    'Visualization',
+                    'Writing - original draft',
+                    'Writing - review & editing'
+                ]
+            }
+        ]
+    }
+
+    expected_merged = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'credit_roles': [
+                    'Conceptualization',
+                    'Data curation',
+                    'Formal analysis',
+                    'Funding acquisition',
+                    'Investigation',
+                    'Methodology',
+                    'Project administration',
+                    'Resources',
+                    'Software',
+                    'Supervision',
+                    'Validation',
+                    'Visualization',
+                    'Writing - original draft',
+                    'Writing - review & editing'
+                ]
+            }
+        ]
+    }
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_curated_relation_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'curated_relation': False
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'curated_relation': True
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['authors', 0, 'curated_relation'], True]]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_emails_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'emails': [
+                    'pitts.kevin@gmail.com',
+                    'pitts.kevin@mit.edu'
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T.',
+                'emails': [
+                    'pitts.kevin@gmail.com',
+                    'kevin.pitts@gmail.com',
+                    'kevin.pitts@mit.edu'
+                ]
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [['ADD_BACK_TO_HEAD', ['authors', 0, 'emails'], 'pitts.kevin@mit.edu']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_full_name_field():
+    root = {
+        'authors': [
+            {
+                'full_name': 'Pitts Kevin',
+            }
+        ]
+    }
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin',
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['authors', 0, 'full_name'], 'Pitts, Kevin T']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_ids_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'ids': [
+                    {
+                        'value': 'HEPNAMES-2100',
+                        'schema': 'SPIRES'
+                    }
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'ids': [
+                    {
+                        'value': 'HEPNAMES-2101',
+                        'schema': 'SPIRES'
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = [['SET_FIELD', ['authors', 0, 'ids', 0, 'value'], 'HEPNAMES-2101']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_inspire_roles_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'inspire_roles': [
+                    'editor'
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'inspire_roles': [
+                    'supervisor'
+                ]
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = None
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_raw_affiliations_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'raw_affiliations': [
+                    {
+                        'source': 'arxiv',
+                        'value': 'Department of Physics, Indiana University, Bloomington, IN 47405, USA'
+                    }
+                ]
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'raw_affiliations': [
+                    {
+                        'source': 'arxiv',
+                        'value': 'Department of Physics, Indiana University, Bloomington, IN 47405, US'
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [
+        [
+            'SET_FIELD',
+            ['authors', 0, 'raw_affiliations', 0, 'value'],
+            'Department of Physics, Indiana University, Bloomington, IN 47405, USA'
+        ]
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_record_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/169636'
+                }
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/169637'
+                }
+            }
+        ]
+    }
+
+    expected_merged = head
+    expected_conflict = [
+        [
+            'SET_FIELD',
+            ['authors', 0, 'record', '$ref'],
+            'http://newlabs.inspirehep.net/api/literature/169637'
+        ]
+    ]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_signature_block_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'signature_block': 'Mister Pitts, Kevin Travis',
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'signature_block': 'Mr. Pitts, Kevin Travis',
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [['SET_FIELD', ['authors', 0, 'signature_block'], 'Mister Pitts, Kevin Travis']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_uuid_field():
+    root = {}
+    head = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'uuid': 'a2f28e91-a2f1-4466-88d7-14f3bba99a9a',
+            }
+        ]
+    }
+    update = {
+        'authors': [
+            {
+                'full_name': 'Pitts, Kevin T',
+                'uuid': 'a2f28e91-a2f1-4466-88d7-14f3bba99a9c',
+            }
+        ]
+    }
+
+    expected_merged = update
+    expected_conflict = [['SET_FIELD', ['authors', 0, 'uuid'], 'a2f28e91-a2f1-4466-88d7-14f3bba99a9a']]
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
 
 
 def test_merging_book_series_field():
@@ -1202,7 +1352,7 @@ def test_merging_copyright_field():
         'copyright': [
             {
                 'holder': 'Elsevier',
-                'material': 'For open access articles',
+                'material': 'For open Access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
                 'year': 2011
@@ -1213,7 +1363,7 @@ def test_merging_copyright_field():
     head = {
         'copyright': [
             {
-                'holder': 'elsevier',
+                'holder': 'Elsevier',
                 'material': 'For open access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
@@ -1224,8 +1374,8 @@ def test_merging_copyright_field():
     update = {
         'copyright': [
             {
-                'holder': 'Elsevier',
-                'material': 'For open access articles',
+                'holder': 'elsevier',
+                'material': 'For open Access articles',
                 'statement': 'Copyright @ unknown. Published by Elsevier B.V.',
                 'url': 'https://www.elsevier.com/about/our-business/policies/copyright',
                 'year': 2011
@@ -2276,3 +2426,4 @@ def test_merging_wirthdrawn_field():
 
     assert merged == expected_merged
     assert conflict == expected_conflict
+
