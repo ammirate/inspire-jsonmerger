@@ -1971,32 +1971,34 @@ def test_merging_number_of_pages_field():
     assert conflict == expected_conflict
 
 
-@pytest.mark.xfail()
 def test_merging_persistent_identifiers_field():
-    root = {'persistent_identifiers': [
-        {'schema': 'HDL',
-            'source': 'EDP Sciences',
-            'value': '10.1051/epjconf/201713506006'}
-    ]}  # record: 1517880
-    head = {'persistent_identifiers': [
-        {
-            'material': 'paper',
-            'schema': 'HDL',
-            'source': 'EDP Sciences',
-            'value': '10.1051/epjconf/201713506006'
-        }
-    ]}
-    update = {'persistent_identifiers': [
-        {
-            'material': 'paper',
-            'schema': 'HDL foo',
-            'source': 'EDP Sciences bar',
-            'value': '10.1051/epjconf/201713506006'
-        }
-    ]}
+    root = {}
+    head = {
+        'persistent_identifiers': [
+            {
+                'material': 'paper',
+                'schema': 'HDL',
+                'source': 'EDP Sciences',
+                'value': '10.1051/epjconf/201713506006'
+            }
+        ]
+    }
+    update = {
+        'persistent_identifiers': [
+            {
+                'material': 'paper',
+                'schema': 'HDL foo',
+                'source': 'EDP Sciences bar',
+                'value': '10.1051/epjconf/201713506006'
+            }
+        ]
+    }
 
     expected_merged = head
-    expected_conflict = None
+    expected_conflict = [
+        ['SET_FIELD', ['persistent_identifiers', 0, 'source'], 'EDP Sciences bar'],
+        ['SET_FIELD', ['persistent_identifiers', 0, 'schema'], 'HDL foo']
+    ]
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
@@ -2040,58 +2042,127 @@ def test_merging_public_notes_field():
     assert conflict == expected_conflict
 
 
-@pytest.mark.xfail()
 def test_merging_publication_info_field():
-    # TODO: test more
-    root = {'publication_info': [
-        {
-            'artid': '948-979',
-            'journal_title': 'Adv.Theor.Math.Phys.',
-            'journal_volume': '12',
-            'year': '2008'
-        }
-    ]}  # record 697133
-    head = {'publication_info': [
-        {
-            'artid': '948-979',
-            'curated_relation': True,
-            'journal_issue': 'foo',
-            'journal_title': 'Adv.Theor.Math.Phys.',
-            'journal_volume': '12',
-            'year': '2008'
-        }
-    ]}
-    update = {'publication_info': [
-        {
-            'artid': '948-979',
-            'curated_relation': False,
-            'journal_title': 'Adv.Theor.Math.Phys.',
-            'journal_volume': '12',
-            'year': '2008'
-        }, {
-            'journal_title': 'foor bar',
-            'journal_volume': '12',
-            'year': '2016'
-        }
-    ]}
+    root = {
+        'publication_info': [
+            {
+                'artid': '948-979',
+                'curated_relation': True,
+                'journal_issue': 'foo',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }
+        ]
+    }  # record 697133
+    head = {
+        'publication_info': [
+            {
+                'artid': '948-979',
+                'curated_relation': True,
+                'journal_issue': '2',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }
+        ]
+    }
+    update = {
+        'publication_info': [
+            {
+                'artid': '948-979',
+                'curated_relation': True,
+                'journal_issue': '1',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }, {
+                'artid': '948-977',
+                'curated_relation': True,
+                'journal_issue': '4',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }
+        ]
+    }
 
-    expected_merged = {'publication_info': [
-        {
-            'artid': '948-979',
-            'curated_relation': False,
-            'journal_issue': 'foo',  # added from head changes
-            'journal_title': 'Adv.Theor.Math.Phys.',
-            'journal_volume': '12',
-            'year': '2008'
-        }, {
-            'journal_title': 'foor bar',
-            'journal_volume': '12',
-            'year': '2016'
-        }
-    ]}
-    expected_conflict = [['SET_FIELD',
-                          ['publication_info', 0, 'curated_relation'],
-                          True]]
+    expected_merged = {
+        'publication_info': [
+            {
+                'artid': '948-979',
+                'curated_relation': True,
+                'journal_issue': '2',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }, {
+                'artid': '948-979',
+                'curated_relation': True,
+                'journal_issue': '1',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }, {
+                'artid': '948-977',
+                'curated_relation': True,
+                'journal_issue': '4',
+                'journal_title': 'Adv.Theor.Math.Phys.',
+                'journal_volume': '12',
+                'year': '2008',
+                'cnum': 'C12-03-10',
+                'material': 'erratum',
+                'page_end': '042',
+                'page_start': '032',
+                'parent_isbn': '978-0-521-46702-5',
+                'parent_report_number': 'CERN-PH-TH-2012-115',
+                'parent_title': 'Probing Top-Higgs Non-Standard Interactions at the LHC',
+            }
+        ]
+    }
+    expected_conflict = None
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
@@ -2120,21 +2191,6 @@ def test_merging_refereed_field():
 
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['refereed'], True]]
-
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
-
-    assert merged == expected_merged
-    assert conflict == expected_conflict
-
-
-@pytest.mark.xfail()
-def test_merging_references_field():
-    root = {}
-    head = {}
-    update = {}
-
-    expected_merged = {}
-    expected_conflict = None
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 
@@ -2248,54 +2304,56 @@ def test_merging_texkeys_field():
     assert merged == expected_merged
     assert conflict == expected_conflict
 
-@pytest.mark.xfail()
-def test_merging_thesis_info_field():
-    root = {'thesis_info':
-                {
-                    'date': '2017',
-                    'defense_date': '2017',
-                     'degree_type': 'PhD',
-                    'institutions': [
-                        {
-                            'curated_relation': False,
-                            'name': 'Columbia U.',
-                            'record': {'$ref': 'foo-link'}
-                        }
-                    ]
-                }
-            }  # record: 1597507
-    head = {'thesis_info': {
-                    'date': '2017',
-                    'defense_date': '2017',
-                     'degree_type': 'PhD',
-                    'institutions': [
-                        {
-                            'curated_relation': True,
-                            'name': 'Columbia University',
-                            'record': {'$ref': 'foo-link'}
-                        }
-                    ]
-                }
-            }
-    update = {'thesis_info': {
-                    'date': '2017',
-                    'defense_date': '2017',
-                     'degree_type': 'PhD',
-                    'institutions': [
-                        {
-                            'curated_relation': False,
-                            'name': 'Second university of foo bar',
-                            'record': {'$ref': 'foo-link2'}
-                        }, {
-                            'curated_relation': False,
-                            'name': 'Columbia U.',
-                            'record': {'$ref': 'foo-link'}
-                        },
-                    ]
-                }
-             }
 
-    expected_merged = head
+def test_merging_thesis_info_field():
+    root = {
+        'thesis_info': {
+            'date': '2017',
+            'defense_date': '2017',
+             'degree_type': 'PhD',
+            'institutions': [
+                {
+                    'curated_relation': False,
+                    'name': 'Columbia U.',
+                    'record': {'$ref': 'foo-link'}
+                }
+            ]
+        }
+    }  # record: 1597507
+    head = {
+        'thesis_info': {
+            'date': '2017',
+            'defense_date': '2017',
+             'degree_type': 'PhD',
+            'institutions': [
+                {
+                    'curated_relation': True,
+                    'name': 'Columbia University',
+                    'record': {'$ref': 'foo-link'}
+                }
+            ]
+        }
+    }
+    update = {
+        'thesis_info': {
+            'date': '2017',
+            'defense_date': '2017',
+            'degree_type': 'PhD',
+            'institutions': [
+                {
+                    'curated_relation': False,
+                    'name': 'Second university of foo bar',
+                    'record': {'$ref': 'foo-link2'}
+                }, {
+                    'curated_relation': False,
+                    'name': 'Columbia U.',
+                    'record': {'$ref': 'foo-link'}
+                },
+            ]
+        }
+    }
+
+    expected_merged = update
     expected_conflict = None
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
@@ -2428,57 +2486,769 @@ def test_merging_wirthdrawn_field():
     assert conflict == expected_conflict
 
 
-def test_references_field():
-    root = {
-        "references": [
+# References Field
+def test_merging_references_field_curated_relation():
+    root = {}
+    head = {
+        'references': [
             {
-                "reference": {
-                    "authors": [
-                        {
-                            "full_name": "Cox, Brian"
-                        }
-                    ],
-                }
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'curated_relation': True
             }
         ]
     }
 
-    head = {
-        "references": [
+    update = {
+        'references': [
             {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'curated_relation': True
+            }, {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619172'
+                },
+                'curated_relation': True
+            }
+        ]
+    }
 
-                "reference":        {
-                    "authors": [
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_raw_refs():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'raw_refs': [
+                    {
+                        'source': 'reference_builder',
+                        'value': 'Moscow INR preprint 702',
+                        'schema': 'text'
+                    }
+                ]
+            }
+        ]
+    }
+
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'raw_refs': [
+                    {
+                        'source': 'reference_builder',
+                        'value': 'Moscow INR preprint 702',
+                        'schema': 'text'
+                    },
+                    {
+                        'source': 'reference_builder',
+                        'value': 'Ph.D.thesis',
+                        'schema': 'text'
+                    }
+                ]
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_authors():
+    root = {}
+
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'authors': [
                         {
-                            "full_name": "Cox, Brian",
-                            "inspire_role": "author"
-                        },
-                        {
-                            "full_name": "NEW AUTHOR"
+                            'inspire_role': 'author',
+                            'full_name': 'Cox, Brian',
+                        }, {
+                            'inspire_role': 'author',
+                            'full_name': 'Dan, Brown'
                         }
-                    ],
-
+                    ]
                 }
             }
         ]
     }
 
     update = {
-        "references": [
+        'references': [
             {
-                "reference":        {
-                    "authors": [
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'authors': [
                         {
-                            "full_name": "Cox, Brian"
+                            'full_name': 'Cox, Brian'
+                        }
+                    ]
+                }
+            }, {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619172'
+                },
+                'reference': {
+                    'authors': [
+                        {
+                            'inspire_role': 'author',
+                            'full_name': 'Max Power'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [
+        [
+            'ADD_BACK_TO_HEAD',
+            ['references', 0, 'reference', 'authors'],
+            {'full_name': 'Dan, Brown', 'inspire_role': 'author'}
+        ]
+    ]
+    expected_merged = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'authors': [
+                        {
+                            'inspire_role': 'author',
+                            'full_name': 'Cox, Brian'
+                        }
+                    ]
+                }
+            }, {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619172'
+                },
+                'reference': {
+                    'authors': [
+                        {
+                            'inspire_role': 'author',
+                            'full_name': 'Max Power'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_arxiv_eprint():
+    root = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {}
+            }
+        ]
+    }
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'arxiv_eprint': '1703.07275'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'arxiv_eprint': '1703.07274'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'arxiv_eprint'], '1703.07275']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_book_series():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'book_series': [
+                        {
+                            'title': 'IEEE Nucl.Sci. Symp.Conf.Rec.'
                         }
                     ],
                 }
-            },
+            }
+        ]
+    }
+
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'book_series': [
+                        {
+                            'title': 'IEEE Nucl.Sci. Symp.Conf.Rec. foo'
+                        }
+                    ],
+                }
+            }
         ]
     }
 
     expected_conflict = None
-    expected_merged = head
+    expected_merged = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'book_series': [
+                        {
+                            'title': 'IEEE Nucl.Sci. Symp.Conf.Rec.'
+                        }, {
+                            'title': 'IEEE Nucl.Sci. Symp.Conf.Rec. foo'
+                        }
+                    ],
+                }
+            }
+        ]
+    }
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_collaboration():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'collaboration': ['ATLAS Collaboration']
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'collaboration': ['CMS Collaboration']
+                }
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_document_type():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'document_type': 'book'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'document_type': 'article'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'document_type'], 'book']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_dois():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'dois':[
+                        {
+                            'value': '10.1142/S0218271812420151'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'dois': [
+                        {
+                            'value': '10.1103/PhysRevLett.100.013601'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_imprint():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'imprint': {'publisher': 'IAEA', 'date': '2013'}
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'imprint': {'publisher': 'IAEA', 'date': '2014'}
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'imprint', 'date'], '2013']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_isbn():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'isbn': '978-0-691-14034-7'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'isbn': '978-0-691-14034-6'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'isbn'], '978-0-691-14034-7']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_label():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'label': 'feynman_be_no_label'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'label': 'feynman be no label'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'label'], 'feynman_be_no_label']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_misc():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'misc': [
+                        'Proceedings of the International School of Physics Course CXL'
+                    ]
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'misc': [
+                        'Y.-a. Liao, and R. G. Hulet'
+                    ]
+                }
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_persistent_identifiers():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'persistent_identifiers': [
+                        {
+                            'value': 'hdl:1721.1/15620',
+                            'schema': 'HDL'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'persistent_identifiers': [
+                        {
+                            'value': '1963/1698',
+                            'schema': 'HDL'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_report_number():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'report_number':'IFT-UAM-CSIC-14-036'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'report_number': 'IFT-UAM-CSIC-14-037'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'report_number'], 'IFT-UAM-CSIC-14-036']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_texkey():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'texkey': '998'
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'texkey': '999'
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'texkey'], '998']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_title():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'title': {
+                        'title': 'Components of the dilepton continuum in Pb+Pb at $\\sqrt{s_{_{NN}}} = 2.76 $ TeV',
+                        'source': 'arxiv'
+                    }
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'title': {
+                        'title': 'Components of the dilepton continuum in Pb+Pb $\\sqrt{s_{_{NN}}} = 2.76 $ TeV',
+                        'source': 'arxiv'
+                    }
+                }
+            }
+        ]
+    }
+
+    expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'title', 'title'], 'Components of the dilepton continuum in Pb+Pb at $\sqrt{s_{_{NN}}} = 2.76 $ TeV']]
+    expected_merged = update
+
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+
+    assert merged == expected_merged
+    assert conflict == expected_conflict
+
+
+def test_merging_references_field_reference_urls():
+    root = {}
+    head = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'urls': [
+                        {
+                            'description': 'No final state energy loss is included.',
+                            'value': 'http://inspirehep.net/record/1115196/files/Fig1a_histNoEloss_Pt.png'
+                        }, {
+                            'description': 'Here we include final state energy loss assuming that the charm and bottom '
+                                           'quark $R_{AA}$ is the same, as discussed in the text.',
+                            'value': 'http://inspirehep.net/record/1115196/files/Fig2a_histEloss_Pt.png'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+    update = {
+        'references': [
+            {
+                'record': {
+                    '$ref': 'http://newlabs.inspirehep.net/api/literature/619171'
+                },
+                'reference': {
+                    'urls': [
+                        {
+                            'description': 'No final state energy loss is included.',
+                            'value': 'http://inspirehep.net/record/1115196/files/Fig1a_histNoEloss_Pt.jpeg'
+                        }, {
+                            'description': 'Here we include final state energy loss assuming that the charm and bottom '
+                                           'quark $R_{AA}$ is the same, as discussed in the text.',
+                            'value': 'http://inspirehep.net/record/1115196/files/Fig2a_histEloss_Pt.jpeg'
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    expected_conflict = None
+    expected_merged = update
 
     merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
 

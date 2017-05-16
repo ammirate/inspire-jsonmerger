@@ -88,43 +88,26 @@ def get_pk_comparator(primary_key_fields, normalization_functions=None):
     return Ret
 
 
-# already present
-SourceComparator = get_pk_comparator(['source'])
-ValueComparator = get_pk_comparator(['value'])
-CollectionsComparator = get_pk_comparator(['primary'])
-ExtSysNumberComparator = get_pk_comparator(['institute'])
-URLComparator = get_pk_comparator(['url'])
-PubInfoComparator = get_pk_comparator(
-    [
-        ['journal_title', 'journal_volume', 'page_start'],
-        ['journal_title', 'journal_volume', 'artid']
-    ]
-)
-
-#new comparators
-AcquisitionSourceComparator = get_pk_comparator(['version_id'])
-FilesComparator = get_pk_comparator(['version_id'])
-
 AffiliationComparator = get_pk_comparator(['record.$ref', 'value'])
+CollectionsComparator = get_pk_comparator(['primary'])
 CreationDatetimeComparator = get_pk_comparator(['creation_datetime'])
 DateComparator = get_pk_comparator(['date'])
-
+ExtSysNumberComparator = get_pk_comparator(['institute'])
+FilesComparator = get_pk_comparator(['version_id'])
 FundingInfoComparator = get_pk_comparator(['project_number'])
-MaterialComparator = get_pk_comparator(['material'])
 ImprintsComparator = get_pk_comparator(['publisher'])
 LanguageComparator = get_pk_comparator(['language'])
 LicenseComparator = get_pk_comparator(['imposing'])
-
-PIDComparator = get_pk_comparator(['value'])
-ValueComparator = get_pk_comparator(['value'])
-
+MaterialComparator = get_pk_comparator(['material'])
 RecordComparator = get_pk_comparator(['record.$ref'])
 RefComparator = get_pk_comparator(['$ref'])
 SchemaComparator = get_pk_comparator(['schema'])
+SourceComparator = get_pk_comparator(['source'])
 TitleComparator = get_pk_comparator(['title'])
+URLComparator = get_pk_comparator(['url'])
+ValueComparator = get_pk_comparator(['value'])
 
-# RecordComparator = get_pk_comparator(['thesis_info.record.$ref'])
-ReferencesComparator = get_pk_comparator(['raw_ref.value'])
+
 SingleReferenceComparator = get_pk_comparator([
     ['arxiv_eprint'],
     ['dois'],
@@ -143,56 +126,27 @@ COMPARATORS = {
     'arxiv_eprints': ValueComparator,
     'authors': AuthorComparator,
     'authors.affiliations': AffiliationComparator,
-    # 'authors.alternative_names': 'has to be defined/implemented',
-    # 'authors.credit_roles': 'has to be defined/implemented',
-    # 'authors.curated_relation': 'has to be defined/implemented',
-    # 'authors.emails': 'has to be defined/implemented',
-    # 'authors.full_name': 'has to be defined/implemented',
     'authors.ids': SchemaComparator,
-    # 'authors.inspire_roles': 'has to be defined/implemented',
     'authors.raw_affiliations': SourceComparator,
-    # 'authors.record': 'has to be defined/implemented',
-    # 'authors.signature_block': 'has to be defined/implemented',
-    # 'authors.uuid': 'has to be defined/implemented',
     'book_series': TitleComparator,
     'collaborations': RecordComparator,
     'copyright': MaterialComparator,
     'deleted_records': RefComparator,
-    # 'document_type': 'has to be defined/implmented',
     'dois': ValueComparator,
-    # 'editions': 'has to be defined/implmented',
-    # 'energy_ranges': 'has to be defined/implmented',
     'external_system_identifiers': SchemaComparator,
     'funding_info': FundingInfoComparator,
     'imprints': ImprintsComparator,
-    # 'inspire_categories': 'has to be defined/implmented',
     'isbns': ValueComparator,
     'keywords': ValueComparator,
-    # 'languages': 'has to be defined/implmented',
-    # 'legacy_creation_date': 'has to be defined/implmented',
     'license': LicenseComparator,
     'new_record': RefComparator,
-    # 'number_of_pages': 'has to be defined/implmented',
     'persistent_identifiers': ValueComparator,
-    # 'preprint_date': ,
     'public_notes': SourceComparator,
-    'publication_info': PubInfoComparator,
-    # 'publication_type': 'has to be defined/implmented',
-    # 'refereed': 'has to be defined/implmented',
-    'references': ReferencesComparator,
-    'references.reference': SingleReferenceComparator,
+    'references': RecordComparator,
     'references.reference.authors': AuthorComparator,
-
     'report_numbers': SourceComparator,
-    # 'self': 'has to be defined/implmented',
-    # 'special_collections': 'has to be defined/implmented',
-    # 'succeeding_entry': 'has to be defined/implmented',
-    # 'texkeys': 'has to be defined/implmented',
-    # 'thesis_info.institutions': RecordComparator,
     'title_translations': LanguageComparator,
-    'titles': LanguageComparator,
-    # 'urls': 'has to be defined/implmented',
-    # 'withdrawn': 'has to be defined/implmented'
+    'titles': LanguageComparator
 }
 
 # We an always default to KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST so
@@ -226,48 +180,31 @@ LIST_MERGE_OPS = {
     'energy_ranges': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'external_system_identifiers': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'funding_info': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    # 'imprints': 'has to be defined',
     'inspire_categories': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
     'isbns': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
     'keywords': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
     'languages': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    # 'legacy_creation_date': 'has to be defined',
     'license': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
-    # 'new_record': 'has to be defined',
-    # 'number_of_pages': 'has to be defined',
     'persistent_identifiers': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    # 'preprint_date': 'has to be defined',
     'public_notes': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'publication_info': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
     'publication_type': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    # 'refereed': 'has to be defined',
-
     'references': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
-    'references.raw_refs':
-        UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_UPDATE_FIRST,
-    'references.reference.authors':
-        UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
-    'references.reference.collaboration':
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    'references.reference.dois':
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    'references.reference.misc':
-        UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    'references.reference.persistent_identifiers':
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    'references.reference.urls':
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-
+    'references.raw_refs': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.authors': UnifierOps.KEEP_UPDATE_ENTITIES_CONFLICT_ON_HEAD_DELETE,
+    'references.reference.book_series': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
+    'references.reference.collaboration': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.dois': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.misc': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.persistent_identifiers': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
+    'references.reference.urls': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'report_numbers': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-    # 'self': 'has to be defined',
     'special_collections': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
-    # 'succeeding_entry': 'has to be defined',
     'texkeys': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     'thesis_info.institutions': UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
     'title_translations': UnifierOps.KEEP_ONLY_HEAD_ENTITIES,
     'titles': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
-    'urls': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST,
-    # 'withdrawn': 'has to be defined'
+    'urls': UnifierOps.KEEP_UPDATE_AND_HEAD_ENTITIES_HEAD_FIRST
 }
 
 FIELD_MERGE_OPS = {
@@ -304,14 +241,19 @@ FIELD_MERGE_OPS = {
     'thesis_info.institutions': DictMergerOps.FALLBACK_KEEP_HEAD,
     'title_translations': DictMergerOps.FALLBACK_KEEP_HEAD,
     'urls': DictMergerOps.FALLBACK_KEEP_HEAD,
-
     'references': DictMergerOps.FALLBACK_KEEP_UPDATE,
-    'references.raw_refs': DictMergerOps.FALLBACK_KEEP_UPDATE,
     'references.reference': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'references.reference.arxiv_eprint': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'references.reference.authors': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'references.reference.collaboration': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'references.reference.misc': DictMergerOps.FALLBACK_KEEP_HEAD,
-    'references.reference.pubblication_info': DictMergerOps.FALLBACK_KEEP_HEAD,
-
+    'references.reference.arxiv_eprint': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.authors': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.book_series': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.document_type': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.dois': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.imprint': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.isbn': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.label': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.persistent_identifiers': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.report_number': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.texkey': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.title': DictMergerOps.FALLBACK_KEEP_UPDATE,
+    'references.reference.urls': DictMergerOps.FALLBACK_KEEP_UPDATE
 }
