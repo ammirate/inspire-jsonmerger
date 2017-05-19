@@ -27,24 +27,26 @@ import json
 import pytest
 
 from json_merger.merger import Merger
-from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
 from inspire_json_merger.merger_config_arxiv2arxiv import (
-    COMPARATORS,
-    LIST_MERGE_OPS,
-    FIELD_MERGE_OPS
+    MergerConfigurationOperations,
+    ARXIV_TO_ARXIV
+)
+
+arxiv_to_arxiv_configuration = MergerConfigurationOperations.factory(
+    ARXIV_TO_ARXIV
 )
 
 
-def json_merger_arxiv_to_arxiv(root, head, update):
+def json_merger_arxiv_to_arxiv(root, head, update, merger_operations):
     merger = Merger(
         root, head, update,
-        DictMergerOps.FALLBACK_KEEP_UPDATE,  # Most common operation
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-        comparators=COMPARATORS,
-        list_merge_ops=LIST_MERGE_OPS,
-        list_dict_ops=FIELD_MERGE_OPS
+        merger_operations.default_dict_merge_op,
+        merger_operations.default_list_merge_op,
+        merger_operations.list_dict_ops,
+        merger_operations.list_merge_ops,
+        merger_operations.comparators,
     )
     conflicts = None
     try:
@@ -64,7 +66,12 @@ def test_merging_schema_field():
     expected_merged = {'$schema': 'http://qa.inspirehep.net/schemas/records/hep.json'}
     expected_conflict = [['SET_FIELD', ['$schema'], 'http://inspirehep.net/schemas/records/hep.json']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(
+        root,
+        head,
+        update,
+        arxiv_to_arxiv_configuration
+    )
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -78,7 +85,7 @@ def test_merging_collections_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -154,7 +161,7 @@ def test_merging_desy_bookkeeping_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -184,7 +191,7 @@ def test_merging_export_to_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -235,7 +242,7 @@ def test_merging_fft_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['_fft', 0, 'filename'], 'fermilab-thesis-2014-19']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -294,7 +301,7 @@ def test_merging_files_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['_files', 0, 'bucket'], 'foo1']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -340,7 +347,7 @@ def test_merging_private_notes_field():
     }
     expected_conflict = [['SET_FIELD', ['_private_notes', 0, 'value'], 'Update from APS OAI Harvest bar']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -385,7 +392,7 @@ def test_merging_abstracts_field():
             'trapped neutrinos by us ing quantum hadrodynamics. bar'
         ]
     ]
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -452,7 +459,7 @@ def test_merging_accelerator_experiments_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -482,7 +489,7 @@ def test_merging_acquisition_source_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['acquisition_source', 'method'], 'batchuploader']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -549,7 +556,7 @@ def test_merging_arxiv_eprints_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -594,7 +601,7 @@ def test_merging_authors_field():
         ['SET_FIELD', ['authors', 0, 'full_name'], 'Cox, Brian E.']
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
     assert merged == expected_merged
     assert conflict == expected_conflict
 
@@ -660,7 +667,7 @@ def test_merging_affiliations_field_per_ref():
         ['SET_FIELD', ['authors', 0, 'affiliations', 0, 'recid'], 902868]
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -731,7 +738,7 @@ def test_merging_affiliations_field_per_value():
         ]
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -833,7 +840,7 @@ def test_merging_alternative_names_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -900,7 +907,7 @@ def test_merging_credit_roles_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -928,7 +935,7 @@ def test_merging_curated_relation_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['authors', 0, 'curated_relation'], True]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -963,7 +970,7 @@ def test_merging_emails_field():
     expected_merged = update
     expected_conflict = [['ADD_BACK_TO_HEAD', ['authors', 0, 'emails'], 'pitts.kevin@mit.edu']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -995,7 +1002,7 @@ def test_merging_full_name_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['authors', 0, 'full_name'], 'Pitts, Kevin T']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1033,7 +1040,7 @@ def test_merging_ids_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['authors', 0, 'ids', 0, 'value'], 'HEPNAMES-2101']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1065,7 +1072,7 @@ def test_merging_inspire_roles_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1109,7 +1116,7 @@ def test_merging_raw_affiliations_field():
         ]
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1147,7 +1154,7 @@ def test_merging_record_field():
         ]
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1175,7 +1182,7 @@ def test_merging_signature_block_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['authors', 0, 'signature_block'], 'Mister Pitts, Kevin Travis']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1203,7 +1210,7 @@ def test_merging_uuid_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['authors', 0, 'uuid'], 'a2f28e91-a2f1-4466-88d7-14f3bba99a9a']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1245,7 +1252,7 @@ def test_merging_book_series_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['book_series', 0, 'volume'], 'spam']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1259,7 +1266,7 @@ def test_merging_citeable_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1326,7 +1333,7 @@ def test_merging_collaborations_field():
     }
     expected_conflict = [['SET_FIELD', ['collaborations', 0, 'value'], 'ATLAS']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1341,7 +1348,7 @@ def test_merging_control_number_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['control_number'], 963519]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1385,7 +1392,7 @@ def test_merging_copyright_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1399,7 +1406,7 @@ def test_merging_core_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1427,7 +1434,7 @@ def test_merging_corporate_author_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1441,7 +1448,7 @@ def test_merging_deleted_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1475,7 +1482,7 @@ def test_merging_deleted_records_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1490,7 +1497,7 @@ def test_merging_document_type():
 
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1505,7 +1512,7 @@ def test_merging_document_type_head_equals_to_root():
     # No expected conflict, since update is legally overwriting an old info
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1521,7 +1528,7 @@ def test_merging_document_type_head_equals_to_root():
     # No expected conflict, since update is legally overwriting an old info
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1565,7 +1572,7 @@ def test_merging_dois_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1579,7 +1586,7 @@ def test_merging_editions_field():
     expected_merged = {'editions': ['editionA', 'edition2']}
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1593,7 +1600,7 @@ def test_merging_energy_ranges_field():
     expected_merged = update  # just update the record with newcoming info
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1645,7 +1652,7 @@ def test_merging_external_system_identifiers_field():
                             ]
                         ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1680,7 +1687,7 @@ def test_merging_funding_info_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1715,7 +1722,7 @@ def test_merging_imprints_field():
     # so the head is directly removed, loosing eventually curated info
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1764,7 +1771,7 @@ def test_merging_inspire_categories_field():
     ]}
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1803,7 +1810,7 @@ def test_merging_isbns_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1846,7 +1853,7 @@ def test_merging_keywords_field():
     ]}
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1861,7 +1868,7 @@ def test_merging_languages_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1875,7 +1882,7 @@ def test_merging_legacy_creation_date_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1923,7 +1930,7 @@ def test_merging_license_field():
     ]}
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1937,7 +1944,7 @@ def test_merging_new_record_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1951,7 +1958,7 @@ def test_merging_new_record_field_filled_root():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -1965,7 +1972,7 @@ def test_merging_number_of_pages_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['number_of_pages'], 108]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2000,7 +2007,7 @@ def test_merging_persistent_identifiers_field():
         ['SET_FIELD', ['persistent_identifiers', 0, 'schema'], 'HDL foo']
     ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2014,7 +2021,7 @@ def test_merging_preprint_date_field():
     expected_merged = head
     expected_conflict = [['SET_FIELD', ['preprint_date'], '2015-05-04']]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2036,7 +2043,7 @@ def test_merging_public_notes_field():
                           '50 pages, 32 figures']
                          ]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2164,7 +2171,7 @@ def test_merging_publication_info_field():
     }
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2178,7 +2185,7 @@ def test_merging_publication_type_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2192,7 +2199,7 @@ def test_merging_refereed_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['refereed'], True]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2226,7 +2233,7 @@ def test_merging_report_numbers_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2240,7 +2247,7 @@ def test_merging_self_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2254,7 +2261,7 @@ def test_merging_special_collections_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2285,7 +2292,7 @@ def test_merging_succeeding_entry_field():
     # updates tries to remove info but we keep the head
     expected_conflict = [['REMOVE_FIELD', ['succeeding_entry'], None]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2299,7 +2306,7 @@ def test_merging_texkeys_field():
     expected_merged = head
     expected_conflict = [['REMOVE_FIELD', ['texkeys'], None]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2356,7 +2363,7 @@ def test_merging_thesis_info_field():
     expected_merged = update
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2394,7 +2401,7 @@ def test_merging_title_translations_field():
     expected_merged = head
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2446,7 +2453,7 @@ def test_merging_titles_field():
     ]}
     expected_conflict = None
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2466,7 +2473,7 @@ def test_merging_urls_field():
     expected_merged = head
     expected_conflict = [['REMOVE_FIELD', ['urls'], None]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2480,7 +2487,7 @@ def test_merging_wirthdrawn_field():
     expected_merged = update
     expected_conflict = [['SET_FIELD', ['withdrawn'], True]]
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2519,7 +2526,7 @@ def test_merging_references_field_curated_relation():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2569,7 +2576,7 @@ def test_merging_references_field_raw_refs():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2665,7 +2672,7 @@ def test_merging_references_field_reference_authors():
         ]
     }
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2710,7 +2717,7 @@ def test_merging_references_field_reference_arxiv_eprint():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'arxiv_eprint'], '1703.07275']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2772,7 +2779,7 @@ def test_merging_references_field_reference_book_series():
         ]
     }
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2808,7 +2815,7 @@ def test_merging_references_field_reference_collaboration():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2844,7 +2851,7 @@ def test_merging_references_field_reference_document_type():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'document_type'], 'book']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2888,7 +2895,7 @@ def test_merging_references_field_reference_dois():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2924,7 +2931,7 @@ def test_merging_references_field_reference_imprint():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'imprint', 'date'], '2013']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2960,7 +2967,7 @@ def test_merging_references_field_reference_isbn():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'isbn'], '978-0-691-14034-7']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -2996,7 +3003,7 @@ def test_merging_references_field_reference_label():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'label'], 'feynman_be_no_label']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3036,7 +3043,7 @@ def test_merging_references_field_reference_misc():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3082,7 +3089,7 @@ def test_merging_references_field_reference_persistent_identifiers():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3118,7 +3125,7 @@ def test_merging_references_field_reference_report_number():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'report_number'], 'IFT-UAM-CSIC-14-036']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3154,7 +3161,7 @@ def test_merging_references_field_reference_texkey():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'texkey'], '998']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3196,7 +3203,7 @@ def test_merging_references_field_reference_title():
     expected_conflict = [['SET_FIELD', ['references', 0, 'reference', 'title', 'title'], 'Components of the dilepton continuum in Pb+Pb at $\sqrt{s_{_{NN}}} = 2.76 $ TeV']]
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict
@@ -3250,7 +3257,7 @@ def test_merging_references_field_reference_urls():
     expected_conflict = None
     expected_merged = update
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     assert merged == expected_merged
     assert conflict == expected_conflict

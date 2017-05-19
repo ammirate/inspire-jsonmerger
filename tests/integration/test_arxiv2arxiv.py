@@ -27,24 +27,26 @@ import json
 import pytest
 
 from json_merger.merger import Merger
-from json_merger.config import DictMergerOps, UnifierOps
 from json_merger.errors import MergeError
 
 from inspire_json_merger.merger_config_arxiv2arxiv import (
-    COMPARATORS,
-    LIST_MERGE_OPS,
-    FIELD_MERGE_OPS
+    MergerConfigurationOperations,
+    ARXIV_TO_ARXIV
+)
+
+arxiv_to_arxiv_configuration = MergerConfigurationOperations.factory(
+    ARXIV_TO_ARXIV
 )
 
 
-def json_merger_arxiv_to_arxiv(root, head, update):
+def json_merger_arxiv_to_arxiv(root, head, update, merger_operations):
     merger = Merger(
         root, head, update,
-        DictMergerOps.FALLBACK_KEEP_UPDATE,  # Most common operation
-        UnifierOps.KEEP_ONLY_UPDATE_ENTITIES,
-        comparators=COMPARATORS,
-        list_merge_ops=LIST_MERGE_OPS,
-        list_dict_ops=FIELD_MERGE_OPS
+        merger_operations.default_dict_merge_op,
+        merger_operations.default_list_merge_op,
+        merger_operations.comparators,
+        merger_operations.list_merge_ops,
+        merger_operations.list_dict_ops
     )
     conflicts = None
     try:
@@ -61,7 +63,7 @@ def json_merger_arxiv_to_arxiv(root, head, update):
 def test_complete_merge(update_fixture_loader, scenario):
     root, head, update = update_fixture_loader.load_test(scenario)
 
-    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update)
+    merged, conflict = json_merger_arxiv_to_arxiv(root, head, update, arxiv_to_arxiv_configuration)
 
     expected_merged = {}
     expected_conflict = []
